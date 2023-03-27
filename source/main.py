@@ -1367,6 +1367,14 @@ def set_default_task(tasknumber, row):
     person[row][5][1] = tasknumber
 
 
+def about():
+    about_window = Toplevel(root)
+    about_window.title('Om')
+    about_window.resizable(FALSE, FALSE)
+    about_window.geometry('200x150')
+    Label(about_window, text=f'Rastplaneraren v. {version}').grid(column=1, row=5, padx=10, pady=10)
+
+
 tasksvariable = []
 breaksvariable = []
 workersminimum = []
@@ -1391,6 +1399,9 @@ menubar.add_cascade(label="Arkiv", menu=arkivmenu)
 verktygmenu = Menu(menubar, tearoff=0)
 verktygmenu.add_command(label='Inställningar', command=settings)
 menubar.add_cascade(label='Verktyg', menu=verktygmenu)
+helpmenu = Menu(menubar, tearoff=0)
+helpmenu.add_command(label='Om', command=about)
+menubar.add_cascade(label='Hjälp', menu=helpmenu)
 root.config(menu=menubar)
 
 separatorStyle = ttk.Style()
