@@ -270,7 +270,6 @@ def new_task_save():
 
 def edit_task(task):
     # show all widgets for edit task
-    print(task)
     for newtaskwidgetn, newtaskwidget in enumerate(newtaskwidgets):
         if newtaskwidgetn == 15:
             newtaskwidget[task].grid()
@@ -1127,7 +1126,6 @@ def export_to_excel():
             font_style_bold = eval(cell['font_style_bold'])
         else:
             font_style_bold = False
-        print(font_style_bold)
         if cell['font_style_italic']:
             font_style_italic = cell['font_style_italic']
         else:
