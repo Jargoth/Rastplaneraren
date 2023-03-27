@@ -9,7 +9,7 @@ import random
 
 from settings import getsettings
 
-version = '0.1.0'
+version = '0.1.1'
 
 
 def button_color(row, col):
