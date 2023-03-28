@@ -9,7 +9,7 @@ import random
 
 from settings import getsettings
 
-version = '0.1.0'
+version = '0.1.1'
 
 
 def button_color(row, col):
@@ -270,7 +270,6 @@ def new_task_save():
 
 def edit_task(task):
     # show all widgets for edit task
-    print(task)
     for newtaskwidgetn, newtaskwidget in enumerate(newtaskwidgets):
         if newtaskwidgetn == 15:
             newtaskwidget[task].grid()
@@ -1127,7 +1126,6 @@ def export_to_excel():
             font_style_bold = eval(cell['font_style_bold'])
         else:
             font_style_bold = False
-        print(font_style_bold)
         if cell['font_style_italic']:
             font_style_italic = cell['font_style_italic']
         else:
@@ -1290,9 +1288,29 @@ def plan_breaks():
                             break
                     if not done:
                         for j in range(len(workers)):
+
+                            # see if there is 4 free quarters next, including this quarter
+                            num_free_quarter = 0
+                            for free_quarter in range(4):
+                                if (quarter + free_quarter) >= 52:
+                                    num_free_quarter = num_free_quarter + 1
+                                else:
+                                    if person[workers[nextemployee][0]][4][quarter + free_quarter][1] == 0:
+                                        num_free_quarter = num_free_quarter + 1
+                                    # see how much time to plan
+                                    required_quarter = 0
+                                    for p in person:
+                                        if p[4][quarter + free_quarter][1] != i:
+                                            required_quarter = required_quarter + 1
+                                        else:
+                                            break
+
+
                             timesplanned = 0
+                            print(f'{i} {quarter} {employees[nextemployee][0]} {num_free_quarter} {required_quarter}')
                             if person[workers[nextemployee][0]][4][quarter + timesplanned][1] == 0 and \
-                                    workers[nextemployee][1] < int(tasksvariable[i][6]):
+                                    workers[nextemployee][1] < int(tasksvariable[i][6]) and \
+                                    (num_free_quarter >= 4 or num_free_quarter >= required_quarter):
                                 planned = False
                                 while timesplanned < int(tasksvariable[i][5]) / 15 and \
                                         person[workers[nextemployee][0]][4][quarter + timesplanned][1] == 0:
@@ -1369,6 +1387,14 @@ def set_default_task(tasknumber, row):
     person[row][5][1] = tasknumber
 
 
+def about():
+    about_window = Toplevel(root)
+    about_window.title('Om')
+    about_window.resizable(FALSE, FALSE)
+    about_window.geometry('200x150')
+    Label(about_window, text=f'Rastplaneraren v. {version}').grid(column=1, row=5, padx=10, pady=10)
+
+
 tasksvariable = []
 breaksvariable = []
 workersminimum = []
@@ -1393,6 +1419,9 @@ menubar.add_cascade(label="Arkiv", menu=arkivmenu)
 verktygmenu = Menu(menubar, tearoff=0)
 verktygmenu.add_command(label='Inställningar', command=settings)
 menubar.add_cascade(label='Verktyg', menu=verktygmenu)
+helpmenu = Menu(menubar, tearoff=0)
+helpmenu.add_command(label='Om', command=about)
+menubar.add_cascade(label='Hjälp', menu=helpmenu)
 root.config(menu=menubar)
 
 separatorStyle = ttk.Style()

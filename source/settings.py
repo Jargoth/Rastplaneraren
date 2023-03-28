@@ -691,15 +691,9 @@ def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, emp
 
     v = settings.getAttribute('version')
 
-    # upgrade to version 0.1.0
-    if not v:
+    # upgrade to version 0.1.1
+    if not v == '0.1.0':
         settings.setAttribute('version', version)
-
-        employee = settings.getElementsByTagName('employee')
-        for e in employee:
-            data = domtree.createElement('default_task')
-            data.appendChild(domtree.createTextNode('1'))
-            e.appendChild(data)
 
         domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
 

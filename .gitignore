@@ -1,0 +1,10 @@
+
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/Rastplaneraren.iml
+.idea/vcs.xml
+.idea/workspace.xml
+/source/settings.xml
+/source/schema.xlsx
+source/__pycache__/settings.cpython-310.pyc
