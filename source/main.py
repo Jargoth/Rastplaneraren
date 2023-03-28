@@ -1288,9 +1288,29 @@ def plan_breaks():
                             break
                     if not done:
                         for j in range(len(workers)):
+
+                            # see if there is 4 free quarters next, including this quarter
+                            num_free_quarter = 0
+                            for free_quarter in range(4):
+                                if (quarter + free_quarter) >= 52:
+                                    num_free_quarter = num_free_quarter + 1
+                                else:
+                                    if person[workers[nextemployee][0]][4][quarter + free_quarter][1] == 0:
+                                        num_free_quarter = num_free_quarter + 1
+                                    # see how much time to plan
+                                    required_quarter = 0
+                                    for p in person:
+                                        if p[4][quarter + free_quarter][1] != i:
+                                            required_quarter = required_quarter + 1
+                                        else:
+                                            break
+
+
                             timesplanned = 0
+                            print(f'{i} {quarter} {employees[nextemployee][0]} {num_free_quarter} {required_quarter}')
                             if person[workers[nextemployee][0]][4][quarter + timesplanned][1] == 0 and \
-                                    workers[nextemployee][1] < int(tasksvariable[i][6]):
+                                    workers[nextemployee][1] < int(tasksvariable[i][6]) and \
+                                    (num_free_quarter >= 4 or num_free_quarter >= required_quarter):
                                 planned = False
                                 while timesplanned < int(tasksvariable[i][5]) / 15 and \
                                         person[workers[nextemployee][0]][4][quarter + timesplanned][1] == 0:
