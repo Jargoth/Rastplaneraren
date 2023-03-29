@@ -26,18 +26,23 @@ def button_color(row, col):
         completed = False
         while not completed:
             if forward:  # check forward in the schedule
-                if person[row][4][col + numtries][1] == activetask.get():  # still the same
+
+                # still the same so turn the other way and ad 1 step
+                if person[row][4][col + numtries][1] == activetask.get():
+                    # still the same so turn the other way and ad 1 step
                     forward = False
                     numtries = numtries + 1
-                else:
+
+                else:  # Found the color to change to
                     oldtask = person[row][4][col + numtries][1]
                     person[row][4][col][0]['bg'] = f'#{tasksvariable[oldtask][2]}'
                     person[row][4][col][1] = oldtask
                     completed = True
+
             else: #check backwards in the schedule
-                if person[row][4][col - numtries][1] == activetask.get():  # still the same
+                if person[row][4][col - numtries][1] == activetask.get():  # still the same so turn the other way
                     forward = True
-                else:
+                else:  # Found the color to change to
                     oldtask = person[row][4][col - numtries][1]
                     person[row][4][col][0]['bg'] = f'#{tasksvariable[oldtask][2]}'
                     person[row][4][col][1] = oldtask
@@ -50,10 +55,16 @@ def button_color(row, col):
 
 
 def add_time(row, workinghours):
+    # This function is run when entering starting and stoping working hours on todays schedule
+    # It shows buttons that corresponds to the correct quarter of an hour.
+    # The buttons will be set to a color that curresponds to the default color of that employee.
+
+    # start by clearing all the buttons
     for i in range(52):
-        person[int(row)][4][i][1] = -1
-        person[int(row)][4][i][0].grid_remove()
+        person[int(row)][4][i][1] = -1  # the index number of the currents task is set to -1 (= no task)
+        person[int(row)][4][i][0].grid_remove()  # don't show the button
     try:
+        # extracting start and stop time
         startend = workinghours.split('-')
         start = startend[0].split(':')
         end = startend[1].split(':')
@@ -67,6 +78,8 @@ def add_time(row, workinghours):
         curr = starthour + startmin
         if curr < 0:
             curr = 0
+
+        # set the task index, set correct color, show the buttons
         for i in range(endhour + endmin - starthour - startmin):
             if i + curr < 52:
                 person[int(row)][4][i + curr][1] = person[int(row)][5][1]
@@ -131,17 +144,15 @@ def add_person(row, name):
 
 
 def move_settings_window(e):
+    # This function is called when moving the settings window
+    # It moves the window to the possition of the mouse
+
     settingsWindow.geometry(f'+{e.x_root}+{e.y_root}')
 
 
-def select_color(color, task):
-    colorwindow = colorchooser.askcolor(initialcolor=f'#{color}', parent=root)
-    tasksvariable[task][2] = colorwindow[1][1:]
-    taskbutton[task]['bg'] = f'#{tasksvariable[task][2]}'
-    taskbutton[task]['text'] = tasksvariable[task][2]
-
-
 def show_new_task():
+    # This function whows the widgets to add a new task
+
     # set default values
     newtaskwidgets[0]['text'] = 'Lägg till en ny uppgift'
     newtaskname.set('')
@@ -229,8 +240,7 @@ def new_task_save():
     ttk.Radiobutton(topframe, text=str(newtaskname.get()), variable=activetask, value=i).grid(column=i, row=0)
     Button(tasksframe,
            text=str(newtaskcolor.get()),
-           bg=f'#{newtaskcolor.get()}',
-           command=lambda color=newtaskcolor.get(), task=i - 1: select_color(color=color, task=task)).grid(row=i,
+           bg=f'#{newtaskcolor.get()}').grid(row=i,
                                                                                                            column=1,
                                                                                                            padx=2,
                                                                                                            pady=2)
