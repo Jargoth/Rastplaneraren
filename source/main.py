@@ -150,9 +150,14 @@ def move_settings_window(e):
     settingsWindow.geometry(f'+{e.x_root}+{e.y_root}')
 
 
-def show_new_task():
-    # This function whows the widgets to add a new task
+def select_color(color, task):
+    colorwindow = colorchooser.askcolor(initialcolor=f'#{color}', parent=root)
+    tasksvariable[task][2] = colorwindow[1][1:]
+    taskbutton[task]['bg'] = f'#{tasksvariable[task][2]}'
+    taskbutton[task]['text'] = tasksvariable[task][2]
 
+
+def show_new_task():
     # set default values
     newtaskwidgets[0]['text'] = 'Lägg till en ny uppgift'
     newtaskname.set('')
@@ -240,7 +245,8 @@ def new_task_save():
     ttk.Radiobutton(topframe, text=str(newtaskname.get()), variable=activetask, value=i).grid(column=i, row=0)
     Button(tasksframe,
            text=str(newtaskcolor.get()),
-           bg=f'#{newtaskcolor.get()}').grid(row=i,
+           bg=f'#{newtaskcolor.get()}',
+           command=lambda color=newtaskcolor.get(), task=i - 1: select_color(color=color, task=task)).grid(row=i,
                                                                                                            column=1,
                                                                                                            padx=2,
                                                                                                            pady=2)
