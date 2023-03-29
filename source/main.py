@@ -13,13 +13,20 @@ version = '0.1.2'
 
 
 def button_color(row, col):
-    numtries = 1
+    # This function is called when clicking on section of the schedule.
+    # It changes that section to the color representing the task in activetask
+    # if the section already is the selected colour the the closest is chosen instead
+
+
+    numtries = 1  # number of tries to select the closest colour thats not activetask if the selected is the same
     forward = False
+
+    # if selected section is the same as selected task
     if person[row][4][col][1] == activetask.get():
         completed = False
         while not completed:
-            if forward:
-                if person[row][4][col + numtries][1] == activetask.get():
+            if forward:  # check forward in the schedule
+                if person[row][4][col + numtries][1] == activetask.get():  # still the same
                     forward = False
                     numtries = numtries + 1
                 else:
@@ -27,14 +34,16 @@ def button_color(row, col):
                     person[row][4][col][0]['bg'] = f'#{tasksvariable[oldtask][2]}'
                     person[row][4][col][1] = oldtask
                     completed = True
-            else:
-                if person[row][4][col - numtries][1] == activetask.get():
+            else: #check backwards in the schedule
+                if person[row][4][col - numtries][1] == activetask.get():  # still the same
                     forward = True
                 else:
                     oldtask = person[row][4][col - numtries][1]
                     person[row][4][col][0]['bg'] = f'#{tasksvariable[oldtask][2]}'
                     person[row][4][col][1] = oldtask
                     completed = True
+
+    # if the selected section differs from active task. Change colour
     else:
         person[row][4][col][0]['bg'] = f'#{tasksvariable[activetask.get()][2]}'
         person[row][4][col][1] = activetask.get()
