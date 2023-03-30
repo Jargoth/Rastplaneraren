@@ -8,3 +8,10 @@
 /source/settings.xml
 /source/schema.xlsx
 source/__pycache__/settings.cpython-310.pyc
+-Lappen.gitattributes
+-Lappen.gitignore
+.idea/misc-Lappen.xml
+.idea/workspace-Lappen.xml
+source/__pycache__/settings.cpython-311.pyc
+source/main-Lappen.py
+source/settings-Lappen.xml
