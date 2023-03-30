@@ -642,11 +642,18 @@ def settings():
 
 
 def save_add_excel():
+    # Adds a new xlsx document to the xml, and updates the associated variables
+
+    # Load the excel-spreadsheet
     wb = load_workbook(excel_add_file_name)
     ws = wb.active
+
+    # Load XML
     domtree = xml.dom.minidom.parse('settings.xml')
     settings = domtree.documentElement
     excell = domtree.createElement('excell')
+
+    # Calculate the new excel id number, and set it in the XML
     excel_id = 0
     for e in excell_templates:
         excel_id = int(e)
@@ -655,6 +662,8 @@ def save_add_excel():
     else:
         excel_id = excel_id + 1
     excell.setAttribute('id', str(excel_id))
+
+
     title = domtree.createElement('title')
     title.appendChild(domtree.createTextNode(add_excel_variables[0].get()))
     excell.appendChild(title)
