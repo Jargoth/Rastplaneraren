@@ -819,3 +819,111 @@ def xml_add_person(name, tasksvariable, employees, i):
     else:
         person_id = i + 1
     return person_id
+
+
+def xml_new_task(tasksvariable, newtaskname, newtaskcolor, newtaskauto_generate, newtaskdefault_certified, newtaskschedule_length, newtaskschedule_max_times):
+    # This function adds a new task to the XML-file
+
+    # Prepare variables and opens XML
+    temp = []
+    task_id = str(int(tasksvariable[len(tasksvariable) - 1][0]) + 1)
+    domtree = xml.dom.minidom.parse('settings.xml')
+    settings = domtree.documentElement
+
+    # Set all the variables
+    new_task = domtree.createElement('task')
+    new_task.setAttribute('id', task_id)
+    temp.append(task_id)
+    name = domtree.createElement('name')
+    name.appendChild(domtree.createTextNode(str(newtaskname.get())))
+    new_task.appendChild(name)
+    temp.append(str(newtaskname.get()))
+    color = domtree.createElement('color')
+    color.appendChild(domtree.createTextNode(newtaskcolor.get()))
+    new_task.appendChild(color)
+    temp.append(newtaskcolor.get())
+    auto_generate = domtree.createElement('auto_generate')
+    if newtaskauto_generate.get():
+        auto = 'true'
+    else:
+        auto = 'false'
+    auto_generate.appendChild(domtree.createTextNode(auto))
+    new_task.appendChild(auto_generate)
+    temp.append(auto)
+    default_certified = domtree.createElement('default_certified')
+    if newtaskdefault_certified.get():
+        certified = 'true'
+    else:
+        certified = 'false'
+    default_certified.appendChild(domtree.createTextNode(certified))
+    new_task.appendChild(default_certified)
+    temp.append(certified)
+    schedule_length = domtree.createElement('schedule_length')
+    if newtaskschedule_length.get():
+        length = newtaskschedule_length.get()
+    else:
+        length = '60'
+    schedule_length.appendChild(domtree.createTextNode(length))
+    new_task.appendChild(schedule_length)
+    temp.append(length)
+    schedule_max_times = domtree.createElement('schedule_max_times')
+    if newtaskschedule_max_times.get():
+        max_times = newtaskschedule_max_times.get()
+    else:
+        max_times = '3'
+    schedule_max_times.appendChild(domtree.createTextNode(max_times))
+    new_task.appendChild(schedule_max_times)
+    temp.append(max_times)
+    settings.appendChild(new_task)
+    domtree.appendChild(settings)
+    tasksvariable.append(temp)
+
+    # Adds the task to every employee, with default settings
+    employee = settings.getElementsByTagName('employee')
+    for e in employee:
+        new_task2 = domtree.createElement('task_settings')
+        new_task2.setAttribute('id', task_id)
+        certified = domtree.createElement('certified')
+        if newtaskdefault_certified.get():
+            certifie = 'True'
+        else:
+            certifie = 'False'
+        certified.appendChild(domtree.createTextNode(certifie))
+        new_task2.appendChild(certified)
+        e.appendChild(new_task2)
+
+    # save XML
+    domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
+
+
+def XML_delete_task(tasksvariable, task, employees):
+    # Deletes the task from the XML, and updates employees default task if needed
+
+    # Load XML
+    domtree = xml.dom.minidom.parse('settings.xml')
+    settings = domtree.documentElement
+
+    # Remove the task
+    tasks = settings.getElementsByTagName('task')
+    for t in tasks:
+        if tasksvariable[task][0] == t.getAttribute('id'):
+            t.parentNode.removeChild(t)
+
+    # Load all employees
+    employee = settings.getElementsByTagName('employee')
+    for e in employee:
+
+        # Removes the task from all employees
+        tasks = e.getElementsByTagName('task_settings')
+        for t in tasks:
+            if tasksvariable[task][0] == t.getAttribute('id'):
+                t.parentNode.removeChild(t)
+
+        # Removes the default task from all employees that has it set
+        default_task = e.getElementsByTagName('default_task')[0].childNodes[0].nodeValue
+        if default_task == str(tasksvariable[task][0]):
+            e.getElementsByTagName('default_task')[0].childNodes[0].nodeValue = str(1)
+            employees[en][2] = 1
+
+    # Save XML
+    domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")

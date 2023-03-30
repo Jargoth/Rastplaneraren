@@ -7,7 +7,7 @@ from openpyxl.utils import get_column_letter
 import codecs
 import random
 
-from settings import getsettings, xml_add_person
+from settings import getsettings, xml_add_person, xml_new_task, XML_delete_task
 
 version = '0.1.2'
 
@@ -170,57 +170,10 @@ def select_color_new_task():
 def new_task_save():
     # Saves the new task. It updates the XML and all associated variables
 
-    temp = []
-    task_id = str(int(tasksvariable[len(tasksvariable) - 1][0]) + 1)
-    domtree = xml.dom.minidom.parse('settings.xml')
-    settings = domtree.documentElement
-    new_task = domtree.createElement('task')
-    new_task.setAttribute('id', task_id)
-    temp.append(task_id)
-    name = domtree.createElement('name')
-    name.appendChild(domtree.createTextNode(str(newtaskname.get())))
-    new_task.appendChild(name)
-    temp.append(str(newtaskname.get()))
-    color = domtree.createElement('color')
-    color.appendChild(domtree.createTextNode(newtaskcolor.get()))
-    new_task.appendChild(color)
-    temp.append(newtaskcolor.get())
-    auto_generate = domtree.createElement('auto_generate')
-    if newtaskauto_generate.get():
-        auto = 'true'
-    else:
-        auto = 'false'
-    auto_generate.appendChild(domtree.createTextNode(auto))
-    new_task.appendChild(auto_generate)
-    temp.append(auto)
-    default_certified = domtree.createElement('default_certified')
-    if newtaskdefault_certified.get():
-        certified = 'true'
-    else:
-        certified = 'false'
-    default_certified.appendChild(domtree.createTextNode(certified))
-    new_task.appendChild(default_certified)
-    temp.append(certified)
-    schedule_length = domtree.createElement('schedule_length')
-    if newtaskschedule_length.get():
-        length = newtaskschedule_length.get()
-    else:
-        length = '60'
-    schedule_length.appendChild(domtree.createTextNode(length))
-    new_task.appendChild(schedule_length)
-    temp.append(length)
-    schedule_max_times = domtree.createElement('schedule_max_times')
-    if newtaskschedule_max_times.get():
-        max_times = newtaskschedule_max_times.get()
-    else:
-        max_times = '3'
-    schedule_max_times.appendChild(domtree.createTextNode(max_times))
-    new_task.appendChild(schedule_max_times)
-    temp.append(max_times)
-    settings.appendChild(new_task)
-    domtree.appendChild(settings)
-    tasksvariable.append(temp)
+    # Update the XML
+    xml_new_task(tasksvariable, newtaskname, newtaskcolor, newtaskauto_generate, newtaskdefault_certified, newtaskschedule_length, newtaskschedule_max_times)
 
+    # Update activetasks radiobuttons on todays schedulue
     i = len(tasksvariable) - 1
     ttk.Radiobutton(topframe, text=str(newtaskname.get()), variable=activetask, value=i).grid(column=i, row=0)
     Button(tasksframe,
@@ -229,21 +182,6 @@ def new_task_save():
     label = Label(tasksframe, text=str(newtaskname.get()))
     label.grid(row=i, column=0, padx=2, pady=2)
     label.bind('<ButtonPress-1>', lambda e, tlnum=i: edit_task(task=tlnum))
-
-    employee = settings.getElementsByTagName('employee')
-    for e in employee:
-        new_task2 = domtree.createElement('task_settings')
-        new_task2.setAttribute('id', task_id)
-        certified = domtree.createElement('certified')
-        if newtaskdefault_certified.get():
-            certifie = 'True'
-        else:
-            certifie = 'False'
-        certified.appendChild(domtree.createTextNode(certifie))
-        new_task2.appendChild(certified)
-        e.appendChild(new_task2)
-
-    domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
 
     # add to task popup menu
     for pn, per in enumerate(person):
@@ -271,6 +209,7 @@ def new_task_save():
 
 def edit_task(task):
     # show all widgets for edit task
+
     for newtaskwidgetn, newtaskwidget in enumerate(newtaskwidgets):
         if newtaskwidgetn == 15:
             newtaskwidget[task].grid()
@@ -280,6 +219,7 @@ def edit_task(task):
         else:
             newtaskwidget.grid()
 
+    # Put the current value into the widgets
     newtaskwidgets[0]['text'] = tasksvariable[task][1]
     newtaskname.set(tasksvariable[task][1])
     newtaskcolor.set(tasksvariable[task][2])
@@ -288,10 +228,14 @@ def edit_task(task):
     newtaskdefault_certified.set(tasksvariable[task][4])
     newtaskschedule_length.set(tasksvariable[task][5])
     newtaskschedule_max_times.set(tasksvariable[task][6])
-    newtaskwidgets[13].grid_remove()  # hide new widget save button
+
+    # hide new widget save button
+    newtaskwidgets[13].grid_remove()
 
 
 def edit_task_save(task):
+    # This function saves the new task to XML, and updates alla associated variables
+
     domtree = xml.dom.minidom.parse('settings.xml')
     settings = domtree.documentElement
     tasks = settings.getElementsByTagName('task')
@@ -361,6 +305,8 @@ def edit_task_save(task):
 
 
 def task_delete(task):
+    # Deletes the task from XML, and associated variables
+
     # check if task is in use
     task_in_use = False
     for per in person:
@@ -368,18 +314,15 @@ def task_delete(task):
             if t[1] == task:
                 task_in_use = True
 
+    # Shows error if it's in use
     if task_in_use:
         messagebox.showerror(message='Den här uppgiften används i dagens schema,\noch kan inte tas bort.')
+
+    # Runs if not in use
     else:
 
         # xml
-        domtree = xml.dom.minidom.parse('settings.xml')
-        settings = domtree.documentElement
-        tasks = settings.getElementsByTagName('task')
-        for t in tasks:
-            if tasksvariable[task][0] == t.getAttribute('id'):
-                t.parentNode.removeChild(t)
-        domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
+        XML_delete_task(tasksvariable, task, employees)
 
         # taskvariable
         tasksvariable[task][1] = ''
@@ -399,17 +342,6 @@ def task_delete(task):
         tasklabel[task].grid_remove()
         taskbutton[task].grid_remove()
 
-        # employees settings
-        domtree = xml.dom.minidom.parse('settings.xml')
-        settings = domtree.documentElement
-        employee = settings.getElementsByTagName('employee')
-        for e in employee:
-            tasks = e.getElementsByTagName('task_settings')
-            for t in tasks:
-                if tasksvariable[task][0] == t.getAttribute('id'):
-                    t.parentNode.removeChild(t)
-        domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
-
         # employee settings widgets
         for e in employeeswidgets:
             e[0][0].grid_remove()
@@ -419,15 +351,6 @@ def task_delete(task):
                 w.grid_remove()
 
         # default task
-        domtree = xml.dom.minidom.parse('settings.xml')
-        settings = domtree.documentElement
-        employee = settings.getElementsByTagName('employee')
-        for en, e in enumerate(employee):
-            default_task = e.getElementsByTagName('default_task')[0].childNodes[0].nodeValue
-            if default_task == str(tasksvariable[task][0]):
-                e.getElementsByTagName('default_task')[0].childNodes[0].nodeValue = str(1)
-                employees[en][2] = 1
-        domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
         for employeeswidget in employeeswidgets:
             employeeswidget[3][2] = []
             for t in tasksvariable:
@@ -437,6 +360,8 @@ def task_delete(task):
 
 
 def settings():
+    # The settings window
+
     global settingsWindow
     global taskbutton
     global tasksframe
