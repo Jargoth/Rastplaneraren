@@ -1,3 +1,5 @@
+# This module contains all functions that handles the XML-file containing the settings
+
 import xml.dom.minidom
 import codecs
 
@@ -775,3 +777,45 @@ def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, emp
         excell_templates[excell.getAttribute('id')] = [title[0].childNodes[0].nodeValue, data]
     excel_selected = settings.getElementsByTagName('excel_selected')[0]
     excel_selected_variable[0] = excel_selected.getAttribute('id')
+
+
+def xml_add_person(name, tasksvariable, employees, i):
+    # This function adds a new employee to the XML-file
+    # It also adds the new employee to the employees array
+    # and returns the current index-number.
+
+    # Open the XML-file
+    temp = []
+    domtree = xml.dom.minidom.parse('settings.xml')
+    settings = domtree.documentElement
+
+    # Set the name and default_task settings
+    new = domtree.createElement('employee')
+    data = domtree.createElement('name')
+    data.appendChild(domtree.createTextNode(name))
+    new.appendChild(data)
+    data = domtree.createElement('default_task')
+    data.appendChild(domtree.createTextNode('1'))
+    new.appendChild(data)
+
+    # Sets the certied setting for all available tasks
+    for task in tasksvariable:
+        data = domtree.createElement('task_settings')
+        data.setAttribute('id', task[0])
+        data2 = domtree.createElement('certified')
+        data2.appendChild(domtree.createTextNode(str(task[4])))
+        data.appendChild(data2)
+        new.appendChild(data)
+        temp.append([task[0], str(task[4])])
+
+    # Write the XML and update the employees variable
+    settings.appendChild(new)
+    employees.append([name, temp, '1'])
+    domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
+
+    # Check the current index-number and returns it
+    if not i:
+        person_id = 0
+    else:
+        person_id = i + 1
+    return person_id

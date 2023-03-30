@@ -7,7 +7,7 @@ from openpyxl.utils import get_column_letter
 import codecs
 import random
 
-from settings import getsettings
+from settings import getsettings, xml_add_person
 
 version = '0.1.2'
 
@@ -91,43 +91,24 @@ def add_time(row, workinghours):
 
 
 def add_person(row, name):
+    # This function is runned when you enter an employee name on todays schedule
+    # It connects that name to correct employee to get the special settings for him/her
+    # If a matching employee isn't found it adds a new with default settings
+
+    # check if there's a matching employee
     if name:
         name = name.lower().capitalize()
-        person_id = -1
+        person_id = -1  # -1 means the's no matching
         i = 0
         for (i, employee) in enumerate(employees):
             if name == employee[0]:
                 person_id = i
+
+        # If there's a new employee
         if person_id == -1:
-            temp = []
-            domtree = xml.dom.minidom.parse('settings.xml')
-            settings = domtree.documentElement
+            person_id = xml_add_person(name, tasksvariable, employees, i)
 
-            new = domtree.createElement('employee')
-            data = domtree.createElement('name')
-            data.appendChild(domtree.createTextNode(name))
-            new.appendChild(data)
-            data = domtree.createElement('default_task')
-            data.appendChild(domtree.createTextNode('1'))
-            new.appendChild(data)
-
-            for task in tasksvariable:
-                data = domtree.createElement('task_settings')
-                data.setAttribute('id', task[0])
-                data2 = domtree.createElement('certified')
-                data2.appendChild(domtree.createTextNode(str(task[4])))
-                data.appendChild(data2)
-                new.appendChild(data)
-                temp.append([task[0], str(task[4])])
-
-            settings.appendChild(new)
-            employees.append([name, temp, '1'])
-            domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
-            if not i:
-                person_id = 0
-            else:
-                person_id = i + 1
-
+        # Set all variables to match the employee
         default_task = employees[person_id][2]
         task_color = tasksvariable[0][2]
         default_task_number = 0
