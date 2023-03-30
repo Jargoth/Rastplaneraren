@@ -119,8 +119,6 @@ def add_person(row, name):
         person[int(row)][5][0]['bg'] = f'#{task_color}'
         person[int(row)][5][1] = default_task_number
 
-
-
     return True
 
 
@@ -131,17 +129,12 @@ def move_settings_window(e):
     settingsWindow.geometry(f'+{e.x_root}+{e.y_root}')
 
 
-def select_color(color, task):
-    colorwindow = colorchooser.askcolor(initialcolor=f'#{color}', parent=root)
-    tasksvariable[task][2] = colorwindow[1][1:]
-    taskbutton[task]['bg'] = f'#{tasksvariable[task][2]}'
-    taskbutton[task]['text'] = tasksvariable[task][2]
-
-
 def show_new_task():
+    # Show the widgets needed to add a new task
+
     # set default values
     newtaskwidgets[0]['text'] = 'Lägg till en ny uppgift'
-    newtaskname.set('')
+    newtaskname.set('Ny uppgift')
     newtaskcolor.set('555555')
     newtaskwidgets[4]['bg'] = '#555555'
     newtaskauto_generate.set(False)
@@ -156,6 +149,8 @@ def show_new_task():
 
 
 def hide_new_task():
+    # Hide the widgets to add a new task
+
     for newtaskwidgetn, newtaskwidget in enumerate(newtaskwidgets):
         if newtaskwidgetn == 15 or newtaskwidgetn == 16:  # edit task save and delete
             for newtaskwidge in newtaskwidget:
@@ -165,12 +160,16 @@ def hide_new_task():
 
 
 def select_color_new_task():
+    # Select color for a new task. It opens a colorchooser window and puts the return value into newtaskwidgets[4]['bg']
+
     colorwindow = colorchooser.askcolor(initialcolor=f'#{newtaskcolor.get()}', parent=root)
     newtaskcolor.set(colorwindow[1][1:])
     newtaskwidgets[4]['bg'] = f'#{colorwindow[1][1:]}'
 
 
 def new_task_save():
+    # Saves the new task. It updates the XML and all associated variables
+
     temp = []
     task_id = str(int(tasksvariable[len(tasksvariable) - 1][0]) + 1)
     domtree = xml.dom.minidom.parse('settings.xml')
@@ -226,11 +225,7 @@ def new_task_save():
     ttk.Radiobutton(topframe, text=str(newtaskname.get()), variable=activetask, value=i).grid(column=i, row=0)
     Button(tasksframe,
            text=str(newtaskcolor.get()),
-           bg=f'#{newtaskcolor.get()}',
-           command=lambda color=newtaskcolor.get(), task=i - 1: select_color(color=color, task=task)).grid(row=i,
-                                                                                                           column=1,
-                                                                                                           padx=2,
-                                                                                                           pady=2)
+           bg=f'#{newtaskcolor.get()}').grid(row=i, column=1, padx=2, pady=2)
     label = Label(tasksframe, text=str(newtaskname.get()))
     label.grid(row=i, column=0, padx=2, pady=2)
     label.bind('<ButtonPress-1>', lambda e, tlnum=i: edit_task(task=tlnum))
