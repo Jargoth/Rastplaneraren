@@ -13,38 +13,58 @@ version = '0.1.2'
 
 
 def button_color(row, col):
-    numtries = 1
+    # This function is called when clicking on section of the schedule.
+    # It changes that section to the color representing the task in activetask
+    # if the section already is the selected colour the the closest is chosen instead
+
+
+    numtries = 1  # number of tries to select the closest colour thats not activetask if the selected is the same
     forward = False
+
+    # if selected section is the same as selected task
     if person[row][4][col][1] == activetask.get():
         completed = False
         while not completed:
-            if forward:
+            if forward:  # check forward in the schedule
+
+                # still the same so turn the other way and ad 1 step
                 if person[row][4][col + numtries][1] == activetask.get():
+                    # still the same so turn the other way and ad 1 step
                     forward = False
                     numtries = numtries + 1
-                else:
+
+                else:  # Found the color to change to
                     oldtask = person[row][4][col + numtries][1]
                     person[row][4][col][0]['bg'] = f'#{tasksvariable[oldtask][2]}'
                     person[row][4][col][1] = oldtask
                     completed = True
-            else:
-                if person[row][4][col - numtries][1] == activetask.get():
+
+            else: #check backwards in the schedule
+                if person[row][4][col - numtries][1] == activetask.get():  # still the same so turn the other way
                     forward = True
-                else:
+                else:  # Found the color to change to
                     oldtask = person[row][4][col - numtries][1]
                     person[row][4][col][0]['bg'] = f'#{tasksvariable[oldtask][2]}'
                     person[row][4][col][1] = oldtask
                     completed = True
+
+    # if the selected section differs from active task. Change colour
     else:
         person[row][4][col][0]['bg'] = f'#{tasksvariable[activetask.get()][2]}'
         person[row][4][col][1] = activetask.get()
 
 
 def add_time(row, workinghours):
+    # This function is run when entering starting and stoping working hours on todays schedule
+    # It shows buttons that corresponds to the correct quarter of an hour.
+    # The buttons will be set to a color that curresponds to the default color of that employee.
+
+    # start by clearing all the buttons
     for i in range(52):
-        person[int(row)][4][i][1] = -1
-        person[int(row)][4][i][0].grid_remove()
+        person[int(row)][4][i][1] = -1  # the index number of the currents task is set to -1 (= no task)
+        person[int(row)][4][i][0].grid_remove()  # don't show the button
     try:
+        # extracting start and stop time
         startend = workinghours.split('-')
         start = startend[0].split(':')
         end = startend[1].split(':')
@@ -58,6 +78,8 @@ def add_time(row, workinghours):
         curr = starthour + startmin
         if curr < 0:
             curr = 0
+
+        # set the task index, set correct color, show the buttons
         for i in range(endhour + endmin - starthour - startmin):
             if i + curr < 52:
                 person[int(row)][4][i + curr][1] = person[int(row)][5][1]
@@ -122,6 +144,9 @@ def add_person(row, name):
 
 
 def move_settings_window(e):
+    # This function is called when moving the settings window
+    # It moves the window to the possition of the mouse
+
     settingsWindow.geometry(f'+{e.x_root}+{e.y_root}')
 
 
