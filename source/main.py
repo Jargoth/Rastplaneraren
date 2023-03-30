@@ -672,37 +672,46 @@ def save_add_excel():
         for col in range(1, 55):
             temp = {}
 
+            # set correct cell
             col = get_column_letter(col)
             cell = ws[f'{col}{str(row)}']
             xml_cell = domtree.createElement('cell')
+
+            # set cell id
             xml_cell.setAttribute('id', f'{col}:{str(row)}')
             temp['id'] = f'{col}:{str(row)}'
 
+            #set cell text if present
             text = cell.value
             if text:
                 xml_cell.appendChild(domtree.createTextNode(str(text)))
             temp['text'] = str(text)
 
+            # set font size if text and font size present
             font_size = cell.font.size
             if font_size and text:
                 xml_cell.setAttribute('font_size', str(font_size))
             temp['font_size'] = str(font_size)
 
+            # set font if font and text is present
             font = cell.font.name
             if font and text:
                 xml_cell.setAttribute('font', font)
             temp['font'] = font
 
+            # set bold if bold and text is present
             font_style_bold = cell.font.bold
             if font_style_bold and text:
                 xml_cell.setAttribute('font_style_bold', str(font_style_bold))
             temp['font_style_bold'] = str(font_style_bold)
 
+            # set italic if italic and text is present
             font_style_italic = cell.font.italic
             if font_style_italic and text:
                 xml_cell.setAttribute('font_style_italic', str(font_style_italic))
             temp['font_style_italic'] = str(font_style_italic)
 
+            # set underline type if underline and text is present
             font_style_underline = cell.font.underline
             if font_style_underline and text:
                 xml_cell.setAttribute('font_style_underline', str(font_style_underline))
