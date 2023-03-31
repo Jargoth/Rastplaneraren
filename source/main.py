@@ -7,7 +7,7 @@ from openpyxl.utils import get_column_letter
 import codecs
 import random
 
-from settings import getsettings, xml_add_person, xml_new_task, XML_delete_task
+from settings import *
 
 version = '0.1.2'
 
@@ -642,140 +642,12 @@ def settings():
 
 
 def save_add_excel():
+    # Adds a new xlsx document to the xml, and updates the associated variables
+
+    # Load the excel-spreadsheet
     wb = load_workbook(excel_add_file_name)
     ws = wb.active
-    domtree = xml.dom.minidom.parse('settings.xml')
-    settings = domtree.documentElement
-    excell = domtree.createElement('excell')
-    excel_id = 0
-    for e in excell_templates:
-        excel_id = int(e)
-    if excel_id < 10:
-        excel_id = 10
-    else:
-        excel_id = excel_id + 1
-    excell.setAttribute('id', str(excel_id))
-    title = domtree.createElement('title')
-    title.appendChild(domtree.createTextNode(add_excel_variables[0].get()))
-    excell.appendChild(title)
-    data = []
-    for row in range(1, 16):
-        for col in range(1, 55):
-            temp = {}
-
-            col = get_column_letter(col)
-            cell = ws[f'{col}{str(row)}']
-            xml_cell = domtree.createElement('cell')
-            xml_cell.setAttribute('id', f'{col}:{str(row)}')
-            temp['id'] = f'{col}:{str(row)}'
-
-            text = cell.value
-            if text:
-                xml_cell.appendChild(domtree.createTextNode(str(text)))
-            temp['text'] = str(text)
-
-            font_size = cell.font.size
-            if font_size and text:
-                xml_cell.setAttribute('font_size', str(font_size))
-            temp['font_size'] = str(font_size)
-
-            font = cell.font.name
-            if font and text:
-                xml_cell.setAttribute('font', font)
-            temp['font'] = font
-
-            font_style_bold = cell.font.bold
-            if font_style_bold and text:
-                xml_cell.setAttribute('font_style_bold', str(font_style_bold))
-            temp['font_style_bold'] = str(font_style_bold)
-
-            font_style_italic = cell.font.italic
-            if font_style_italic and text:
-                xml_cell.setAttribute('font_style_italic', str(font_style_italic))
-            temp['font_style_italic'] = str(font_style_italic)
-
-            font_style_underline = cell.font.underline
-            if font_style_underline and text:
-                xml_cell.setAttribute('font_style_underline', str(font_style_underline))
-            temp['font_style_underline'] = str(font_style_underline)
-
-            fg = cell.font.color
-            if fg:
-                if fg.type == 'rgb':
-                    fg = fg.rgb[2:]
-                    if fg:
-                        xml_cell.setAttribute('fg', fg)
-            temp['fg'] = fg
-
-            border_left = cell.border.left.style
-            if border_left:
-                xml_cell.setAttribute('border_left', border_left)
-            temp['border_left'] = border_left
-
-            border_right = cell.border.right.style
-            if border_right:
-                xml_cell.setAttribute('border_right', border_right)
-            temp['border_right'] = border_right
-
-            border_top = cell.border.top.style
-            if border_top:
-                xml_cell.setAttribute('border_top', border_top)
-            temp['border_top'] = border_top
-
-            border_bottom = cell.border.bottom.style
-            if border_bottom:
-                xml_cell.setAttribute('border_bottom', border_bottom)
-            temp['border_bottom'] = border_bottom
-
-            bg = cell.fill.fgColor
-            if bg:
-                if bg.type == 'rgb':
-                    if bg.rgb[:2] != '00':
-                        xml_cell.setAttribute('bg', bg.rgb)
-                        bg = True
-                    else:
-                        bg = False
-            temp['bg'] = bg
-
-            border_left_color = cell.border.left.color
-            if border_left_color:
-                if border_left_color.type == 'rgb':
-                    border_left_color = border_left_color.rgb[2:]
-                    if border_left_color:
-                        xml_cell.setAttribute('border_left_color', border_left_color)
-            temp['border_left_color'] = border_left_color
-
-            border_right_color = cell.border.right.color
-            if border_right_color:
-                if border_right_color.type == 'rgb':
-                    border_right_color = border_right_color.rgb[2:]
-                    if border_right_color:
-                        xml_cell.setAttribute('border_right_color', border_right_color)
-            temp['border_right_color'] = border_right_color
-
-            border_top_color = cell.border.top.color
-            if border_top_color:
-                if border_top_color.type == 'rgb':
-                    border_top_color = border_top_color.rgb[2:]
-                    if border_top_color:
-                        xml_cell.setAttribute('border_top_color', border_top_color)
-            temp['border_top_color'] = border_top_color
-
-            border_bottom_color = cell.border.bottom.color
-            if border_bottom_color:
-                if border_bottom_color.type == 'rgb':
-                    border_bottom_color = border_bottom_color.rgb[2:]
-                    if border_bottom_color:
-                        xml_cell.setAttribute('border_bottom_color', border_bottom_color)
-            temp['border_bottom_color'] = border_bottom_color
-
-            if text or border_left or border_right or border_top or border_bottom or bg:
-                excell.appendChild(xml_cell)
-                data.append(temp)
-
-    settings.appendChild(excell)
-    domtree.appendChild(settings)
-    domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
+    data, excel_id = XML_save_excel_template(ws, excell_templates, add_excel_variables)
     excell_templates[str(excel_id)] = [add_excel_variables[0].get(), data]
 
 
