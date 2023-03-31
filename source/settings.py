@@ -1004,6 +1004,7 @@ def XML_save_excel_template(ws, excell_templates, add_excel_variables):
                 xml_cell.setAttribute('font_style_underline', str(font_style_underline))
             temp['font_style_underline'] = str(font_style_underline)
 
+            # set font color
             fg = cell.font.color
             if fg:
                 if fg.type == 'rgb':
@@ -1074,10 +1075,12 @@ def XML_save_excel_template(ws, excell_templates, add_excel_variables):
                         xml_cell.setAttribute('border_bottom_color', border_bottom_color)
             temp['border_bottom_color'] = border_bottom_color
 
+            # onlo save data if one of these is set
             if text or border_left or border_right or border_top or border_bottom or bg:
                 excell.appendChild(xml_cell)
                 data.append(temp)
 
+    # save xml
     settings.appendChild(excell)
     domtree.appendChild(settings)
     domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")

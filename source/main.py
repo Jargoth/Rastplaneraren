@@ -647,7 +647,11 @@ def save_add_excel():
     # Load the excel-spreadsheet
     wb = load_workbook(excel_add_file_name)
     ws = wb.active
+
+    # add xlsx to xml
     data, excel_id = XML_save_excel_template(ws, excell_templates, add_excel_variables)
+
+    # update excel-variables
     excell_templates[str(excel_id)] = [add_excel_variables[0].get(), data]
 
 
