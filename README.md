@@ -9,3 +9,5 @@ v. 0.1.1
 
 v. 0.1.2
 * Fixed an issue with xml version update
+* Fixed some code aestethics and added comments
+* Added value validation on the entry-widget for workinghours to ensure that only correct data is entered
