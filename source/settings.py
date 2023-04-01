@@ -1088,7 +1088,7 @@ def XML_save_excel_template(ws, excell_templates, add_excel_variables):
     return data, excel_id
 
 
-def XML_save_excel_template(excellwidgets):
+def XML_save_excel(excellwidgets):
     # This function saves selected excel template to xml
 
     domtree = xml.dom.minidom.parse('settings.xml')
