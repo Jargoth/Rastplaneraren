@@ -7,105 +7,137 @@ from openpyxl.utils import get_column_letter
 import codecs
 import random
 
-from settings import getsettings
+from settings import *
 
-version = '0.1.1'
+version = '0.1.2'
 
 
 def button_color(row, col):
-    numtries = 1
+    # This function is called when clicking on section of the schedule.
+    # It changes that section to the color representing the task in activetask
+    # if the section already is the selected colour the the closest is chosen instead
+
+
+    numtries = 1  # number of tries to select the closest colour thats not activetask if the selected is the same
     forward = False
+
+    # if selected section is the same as selected task
     if person[row][4][col][1] == activetask.get():
         completed = False
         while not completed:
-            if forward:
+            if forward:  # check forward in the schedule
+
+                # still the same so turn the other way and ad 1 step
                 if person[row][4][col + numtries][1] == activetask.get():
+                    # still the same so turn the other way and ad 1 step
                     forward = False
                     numtries = numtries + 1
-                else:
+
+                else:  # Found the color to change to
                     oldtask = person[row][4][col + numtries][1]
                     person[row][4][col][0]['bg'] = f'#{tasksvariable[oldtask][2]}'
                     person[row][4][col][1] = oldtask
                     completed = True
-            else:
-                if person[row][4][col - numtries][1] == activetask.get():
+
+            else: #check backwards in the schedule
+                if person[row][4][col - numtries][1] == activetask.get():  # still the same so turn the other way
                     forward = True
-                else:
+                else:  # Found the color to change to
                     oldtask = person[row][4][col - numtries][1]
                     person[row][4][col][0]['bg'] = f'#{tasksvariable[oldtask][2]}'
                     person[row][4][col][1] = oldtask
                     completed = True
+
+    # if the selected section differs from active task. Change colour
     else:
         person[row][4][col][0]['bg'] = f'#{tasksvariable[activetask.get()][2]}'
         person[row][4][col][1] = activetask.get()
 
 
-def add_time(row, workinghours):
-    for i in range(52):
-        person[int(row)][4][i][1] = -1
-        person[int(row)][4][i][0].grid_remove()
-    try:
-        startend = workinghours.split('-')
-        start = startend[0].split(':')
-        end = startend[1].split(':')
-        starthour = int((int(start[0]) - 8) * 4)
-        startmin = int(int(start[1]) / 15)
-        if starthour < 0:
-            starthour = 0
-            startmin = 0
-        endhour = int((int(end[0]) - 8) * 4)
-        endmin = int(int(end[1]) / 15)
-        curr = starthour + startmin
-        if curr < 0:
-            curr = 0
-        for i in range(endhour + endmin - starthour - startmin):
-            if i + curr < 52:
-                person[int(row)][4][i + curr][1] = person[int(row)][5][1]
-                person[int(row)][4][i + curr][0]['bg'] = f"#{tasksvariable[person[int(row)][5][1]][2]}"
-                person[int(row)][4][i + curr][0].grid()
-    except:
-        return False
+def add_time(row, workinghours, type):
+    # This function is run when entering starting and stoping working hours on todays schedule
+    # It shows buttons that corresponds to the correct quarter of an hour.
+    # The buttons will be set to a color that curresponds to the default color of that employee.
+
+    #check if the format is correct
+    if type == 'key':
+
+        # Checks if value is a number or - or :
+        valid = '0123456789:-'
+        for char in workinghours:
+            if char not in valid:
+                return False
+
+        # splits on - if - is present
+        if '-' in workinghours:
+            start_end = workinghours.split('-')
+        else:
+            start_end = [workinghours]
+
+        # splits on : if : is presnt
+        for se in start_end:
+            if ':' in se:
+                start = se.split(':')
+            else:
+                start = [se]
+            # returns False if more than 2 numbers is entered
+            for s in start:
+                if len(s) >= 3:
+                    return False
+
+    # prints out when leaving
+    elif type == 'focusout':
+        try:
+            # start by clearing all the buttons
+            for i in range(52):
+                person[int(row)][4][i][1] = -1  # the index number of the currents task is set to -1 (= no task)
+                person[int(row)][4][i][0].grid_remove()  # don't show the button
+
+            # extracting start and stop time
+            startend = workinghours.split('-')
+            start = startend[0].split(':')
+            end = startend[1].split(':')
+            starthour = int((int(start[0]) - 8) * 4)
+            startmin = int(int(start[1]) / 15)
+            if starthour < 0:
+                starthour = 0
+                startmin = 0
+            endhour = int((int(end[0]) - 8) * 4)
+            endmin = int(int(end[1]) / 15)
+            curr = starthour + startmin
+            if curr < 0:
+                curr = 0
+
+            # set the task index, set correct color, show the buttons
+            for i in range(endhour + endmin - starthour - startmin):
+                if i + curr < 52:
+                    person[int(row)][4][i + curr][1] = person[int(row)][5][1]
+                    person[int(row)][4][i + curr][0]['bg'] = f"#{tasksvariable[person[int(row)][5][1]][2]}"
+                    person[int(row)][4][i + curr][0].grid()
+        except:
+            return False
     return True
 
 
 def add_person(row, name):
+    # This function is runned when you enter an employee name on todays schedule
+    # It connects that name to correct employee to get the special settings for him/her
+    # If a matching employee isn't found it adds a new with default settings
+
+    # check if there's a matching employee
     if name:
         name = name.lower().capitalize()
-        person_id = -1
+        person_id = -1  # -1 means the's no matching
         i = 0
         for (i, employee) in enumerate(employees):
             if name == employee[0]:
                 person_id = i
+
+        # If there's a new employee
         if person_id == -1:
-            temp = []
-            domtree = xml.dom.minidom.parse('settings.xml')
-            settings = domtree.documentElement
+            person_id = xml_add_person(name, tasksvariable, employees, i)
 
-            new = domtree.createElement('employee')
-            data = domtree.createElement('name')
-            data.appendChild(domtree.createTextNode(name))
-            new.appendChild(data)
-            data = domtree.createElement('default_task')
-            data.appendChild(domtree.createTextNode('1'))
-            new.appendChild(data)
-
-            for task in tasksvariable:
-                data = domtree.createElement('task_settings')
-                data.setAttribute('id', task[0])
-                data2 = domtree.createElement('certified')
-                data2.appendChild(domtree.createTextNode(str(task[4])))
-                data.appendChild(data2)
-                new.appendChild(data)
-                temp.append([task[0], str(task[4])])
-
-            settings.appendChild(new)
-            employees.append([name, temp, '1'])
-            domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
-            if not i:
-                person_id = 0
-            else:
-                person_id = i + 1
-
+        # Set all variables to match the employee
         default_task = employees[person_id][2]
         task_color = tasksvariable[0][2]
         default_task_number = 0
@@ -116,26 +148,22 @@ def add_person(row, name):
         person[int(row)][5][0]['bg'] = f'#{task_color}'
         person[int(row)][5][1] = default_task_number
 
-
-
     return True
 
 
 def move_settings_window(e):
+    # This function is called when moving the settings window
+    # It moves the window to the possition of the mouse
+
     settingsWindow.geometry(f'+{e.x_root}+{e.y_root}')
 
 
-def select_color(color, task):
-    colorwindow = colorchooser.askcolor(initialcolor=f'#{color}', parent=root)
-    tasksvariable[task][2] = colorwindow[1][1:]
-    taskbutton[task]['bg'] = f'#{tasksvariable[task][2]}'
-    taskbutton[task]['text'] = tasksvariable[task][2]
-
-
 def show_new_task():
+    # Show the widgets needed to add a new task
+
     # set default values
     newtaskwidgets[0]['text'] = 'Lägg till en ny uppgift'
-    newtaskname.set('')
+    newtaskname.set('Ny uppgift')
     newtaskcolor.set('555555')
     newtaskwidgets[4]['bg'] = '#555555'
     newtaskauto_generate.set(False)
@@ -150,6 +178,8 @@ def show_new_task():
 
 
 def hide_new_task():
+    # Hide the widgets to add a new task
+
     for newtaskwidgetn, newtaskwidget in enumerate(newtaskwidgets):
         if newtaskwidgetn == 15 or newtaskwidgetn == 16:  # edit task save and delete
             for newtaskwidge in newtaskwidget:
@@ -159,90 +189,28 @@ def hide_new_task():
 
 
 def select_color_new_task():
+    # Select color for a new task. It opens a colorchooser window and puts the return value into newtaskwidgets[4]['bg']
+
     colorwindow = colorchooser.askcolor(initialcolor=f'#{newtaskcolor.get()}', parent=root)
     newtaskcolor.set(colorwindow[1][1:])
     newtaskwidgets[4]['bg'] = f'#{colorwindow[1][1:]}'
 
 
 def new_task_save():
-    temp = []
-    task_id = str(int(tasksvariable[len(tasksvariable) - 1][0]) + 1)
-    domtree = xml.dom.minidom.parse('settings.xml')
-    settings = domtree.documentElement
-    new_task = domtree.createElement('task')
-    new_task.setAttribute('id', task_id)
-    temp.append(task_id)
-    name = domtree.createElement('name')
-    name.appendChild(domtree.createTextNode(str(newtaskname.get())))
-    new_task.appendChild(name)
-    temp.append(str(newtaskname.get()))
-    color = domtree.createElement('color')
-    color.appendChild(domtree.createTextNode(newtaskcolor.get()))
-    new_task.appendChild(color)
-    temp.append(newtaskcolor.get())
-    auto_generate = domtree.createElement('auto_generate')
-    if newtaskauto_generate.get():
-        auto = 'true'
-    else:
-        auto = 'false'
-    auto_generate.appendChild(domtree.createTextNode(auto))
-    new_task.appendChild(auto_generate)
-    temp.append(auto)
-    default_certified = domtree.createElement('default_certified')
-    if newtaskdefault_certified.get():
-        certified = 'true'
-    else:
-        certified = 'false'
-    default_certified.appendChild(domtree.createTextNode(certified))
-    new_task.appendChild(default_certified)
-    temp.append(certified)
-    schedule_length = domtree.createElement('schedule_length')
-    if newtaskschedule_length.get():
-        length = newtaskschedule_length.get()
-    else:
-        length = '60'
-    schedule_length.appendChild(domtree.createTextNode(length))
-    new_task.appendChild(schedule_length)
-    temp.append(length)
-    schedule_max_times = domtree.createElement('schedule_max_times')
-    if newtaskschedule_max_times.get():
-        max_times = newtaskschedule_max_times.get()
-    else:
-        max_times = '3'
-    schedule_max_times.appendChild(domtree.createTextNode(max_times))
-    new_task.appendChild(schedule_max_times)
-    temp.append(max_times)
-    settings.appendChild(new_task)
-    domtree.appendChild(settings)
-    tasksvariable.append(temp)
+    # Saves the new task. It updates the XML and all associated variables
 
+    # Update the XML
+    xml_new_task(tasksvariable, newtaskname, newtaskcolor, newtaskauto_generate, newtaskdefault_certified, newtaskschedule_length, newtaskschedule_max_times)
+
+    # Update activetasks radiobuttons on todays schedulue
     i = len(tasksvariable) - 1
     ttk.Radiobutton(topframe, text=str(newtaskname.get()), variable=activetask, value=i).grid(column=i, row=0)
     Button(tasksframe,
            text=str(newtaskcolor.get()),
-           bg=f'#{newtaskcolor.get()}',
-           command=lambda color=newtaskcolor.get(), task=i - 1: select_color(color=color, task=task)).grid(row=i,
-                                                                                                           column=1,
-                                                                                                           padx=2,
-                                                                                                           pady=2)
+           bg=f'#{newtaskcolor.get()}').grid(row=i, column=1, padx=2, pady=2)
     label = Label(tasksframe, text=str(newtaskname.get()))
     label.grid(row=i, column=0, padx=2, pady=2)
     label.bind('<ButtonPress-1>', lambda e, tlnum=i: edit_task(task=tlnum))
-
-    employee = settings.getElementsByTagName('employee')
-    for e in employee:
-        new_task2 = domtree.createElement('task_settings')
-        new_task2.setAttribute('id', task_id)
-        certified = domtree.createElement('certified')
-        if newtaskdefault_certified.get():
-            certifie = 'True'
-        else:
-            certifie = 'False'
-        certified.appendChild(domtree.createTextNode(certifie))
-        new_task2.appendChild(certified)
-        e.appendChild(new_task2)
-
-    domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
 
     # add to task popup menu
     for pn, per in enumerate(person):
@@ -270,6 +238,7 @@ def new_task_save():
 
 def edit_task(task):
     # show all widgets for edit task
+
     for newtaskwidgetn, newtaskwidget in enumerate(newtaskwidgets):
         if newtaskwidgetn == 15:
             newtaskwidget[task].grid()
@@ -279,6 +248,7 @@ def edit_task(task):
         else:
             newtaskwidget.grid()
 
+    # Put the current value into the widgets
     newtaskwidgets[0]['text'] = tasksvariable[task][1]
     newtaskname.set(tasksvariable[task][1])
     newtaskcolor.set(tasksvariable[task][2])
@@ -287,10 +257,14 @@ def edit_task(task):
     newtaskdefault_certified.set(tasksvariable[task][4])
     newtaskschedule_length.set(tasksvariable[task][5])
     newtaskschedule_max_times.set(tasksvariable[task][6])
-    newtaskwidgets[13].grid_remove()  # hide new widget save button
+
+    # hide new widget save button
+    newtaskwidgets[13].grid_remove()
 
 
 def edit_task_save(task):
+    # This function saves the new task to XML, and updates alla associated variables
+
     domtree = xml.dom.minidom.parse('settings.xml')
     settings = domtree.documentElement
     tasks = settings.getElementsByTagName('task')
@@ -360,6 +334,8 @@ def edit_task_save(task):
 
 
 def task_delete(task):
+    # Deletes the task from XML, and associated variables
+
     # check if task is in use
     task_in_use = False
     for per in person:
@@ -367,18 +343,15 @@ def task_delete(task):
             if t[1] == task:
                 task_in_use = True
 
+    # Shows error if it's in use
     if task_in_use:
         messagebox.showerror(message='Den här uppgiften används i dagens schema,\noch kan inte tas bort.')
+
+    # Runs if not in use
     else:
 
         # xml
-        domtree = xml.dom.minidom.parse('settings.xml')
-        settings = domtree.documentElement
-        tasks = settings.getElementsByTagName('task')
-        for t in tasks:
-            if tasksvariable[task][0] == t.getAttribute('id'):
-                t.parentNode.removeChild(t)
-        domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
+        XML_delete_task(tasksvariable, task, employees)
 
         # taskvariable
         tasksvariable[task][1] = ''
@@ -398,17 +371,6 @@ def task_delete(task):
         tasklabel[task].grid_remove()
         taskbutton[task].grid_remove()
 
-        # employees settings
-        domtree = xml.dom.minidom.parse('settings.xml')
-        settings = domtree.documentElement
-        employee = settings.getElementsByTagName('employee')
-        for e in employee:
-            tasks = e.getElementsByTagName('task_settings')
-            for t in tasks:
-                if tasksvariable[task][0] == t.getAttribute('id'):
-                    t.parentNode.removeChild(t)
-        domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
-
         # employee settings widgets
         for e in employeeswidgets:
             e[0][0].grid_remove()
@@ -418,15 +380,6 @@ def task_delete(task):
                 w.grid_remove()
 
         # default task
-        domtree = xml.dom.minidom.parse('settings.xml')
-        settings = domtree.documentElement
-        employee = settings.getElementsByTagName('employee')
-        for en, e in enumerate(employee):
-            default_task = e.getElementsByTagName('default_task')[0].childNodes[0].nodeValue
-            if default_task == str(tasksvariable[task][0]):
-                e.getElementsByTagName('default_task')[0].childNodes[0].nodeValue = str(1)
-                employees[en][2] = 1
-        domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
         for employeeswidget in employeeswidgets:
             employeeswidget[3][2] = []
             for t in tasksvariable:
@@ -436,6 +389,8 @@ def task_delete(task):
 
 
 def settings():
+    # The settings window
+
     global settingsWindow
     global taskbutton
     global tasksframe
@@ -716,140 +671,16 @@ def settings():
 
 
 def save_add_excel():
+    # Adds a new xlsx document to the xml, and updates the associated variables
+
+    # Load the excel-spreadsheet
     wb = load_workbook(excel_add_file_name)
     ws = wb.active
-    domtree = xml.dom.minidom.parse('settings.xml')
-    settings = domtree.documentElement
-    excell = domtree.createElement('excell')
-    excel_id = 0
-    for e in excell_templates:
-        excel_id = int(e)
-    if excel_id < 10:
-        excel_id = 10
-    else:
-        excel_id = excel_id + 1
-    excell.setAttribute('id', str(excel_id))
-    title = domtree.createElement('title')
-    title.appendChild(domtree.createTextNode(add_excel_variables[0].get()))
-    excell.appendChild(title)
-    data = []
-    for row in range(1, 16):
-        for col in range(1, 55):
-            temp = {}
 
-            col = get_column_letter(col)
-            cell = ws[f'{col}{str(row)}']
-            xml_cell = domtree.createElement('cell')
-            xml_cell.setAttribute('id', f'{col}:{str(row)}')
-            temp['id'] = f'{col}:{str(row)}'
+    # add xlsx to xml
+    data, excel_id = XML_save_excel_template(ws, excell_templates, add_excel_variables)
 
-            text = cell.value
-            if text:
-                xml_cell.appendChild(domtree.createTextNode(str(text)))
-            temp['text'] = str(text)
-
-            font_size = cell.font.size
-            if font_size and text:
-                xml_cell.setAttribute('font_size', str(font_size))
-            temp['font_size'] = str(font_size)
-
-            font = cell.font.name
-            if font and text:
-                xml_cell.setAttribute('font', font)
-            temp['font'] = font
-
-            font_style_bold = cell.font.bold
-            if font_style_bold and text:
-                xml_cell.setAttribute('font_style_bold', str(font_style_bold))
-            temp['font_style_bold'] = str(font_style_bold)
-
-            font_style_italic = cell.font.italic
-            if font_style_italic and text:
-                xml_cell.setAttribute('font_style_italic', str(font_style_italic))
-            temp['font_style_italic'] = str(font_style_italic)
-
-            font_style_underline = cell.font.underline
-            if font_style_underline and text:
-                xml_cell.setAttribute('font_style_underline', str(font_style_underline))
-            temp['font_style_underline'] = str(font_style_underline)
-
-            fg = cell.font.color
-            if fg:
-                if fg.type == 'rgb':
-                    fg = fg.rgb[2:]
-                    if fg:
-                        xml_cell.setAttribute('fg', fg)
-            temp['fg'] = fg
-
-            border_left = cell.border.left.style
-            if border_left:
-                xml_cell.setAttribute('border_left', border_left)
-            temp['border_left'] = border_left
-
-            border_right = cell.border.right.style
-            if border_right:
-                xml_cell.setAttribute('border_right', border_right)
-            temp['border_right'] = border_right
-
-            border_top = cell.border.top.style
-            if border_top:
-                xml_cell.setAttribute('border_top', border_top)
-            temp['border_top'] = border_top
-
-            border_bottom = cell.border.bottom.style
-            if border_bottom:
-                xml_cell.setAttribute('border_bottom', border_bottom)
-            temp['border_bottom'] = border_bottom
-
-            bg = cell.fill.fgColor
-            if bg:
-                if bg.type == 'rgb':
-                    if bg.rgb[:2] != '00':
-                        xml_cell.setAttribute('bg', bg.rgb)
-                        bg = True
-                    else:
-                        bg = False
-            temp['bg'] = bg
-
-            border_left_color = cell.border.left.color
-            if border_left_color:
-                if border_left_color.type == 'rgb':
-                    border_left_color = border_left_color.rgb[2:]
-                    if border_left_color:
-                        xml_cell.setAttribute('border_left_color', border_left_color)
-            temp['border_left_color'] = border_left_color
-
-            border_right_color = cell.border.right.color
-            if border_right_color:
-                if border_right_color.type == 'rgb':
-                    border_right_color = border_right_color.rgb[2:]
-                    if border_right_color:
-                        xml_cell.setAttribute('border_right_color', border_right_color)
-            temp['border_right_color'] = border_right_color
-
-            border_top_color = cell.border.top.color
-            if border_top_color:
-                if border_top_color.type == 'rgb':
-                    border_top_color = border_top_color.rgb[2:]
-                    if border_top_color:
-                        xml_cell.setAttribute('border_top_color', border_top_color)
-            temp['border_top_color'] = border_top_color
-
-            border_bottom_color = cell.border.bottom.color
-            if border_bottom_color:
-                if border_bottom_color.type == 'rgb':
-                    border_bottom_color = border_bottom_color.rgb[2:]
-                    if border_bottom_color:
-                        xml_cell.setAttribute('border_bottom_color', border_bottom_color)
-            temp['border_bottom_color'] = border_bottom_color
-
-            if text or border_left or border_right or border_top or border_bottom or bg:
-                excell.appendChild(xml_cell)
-                data.append(temp)
-
-    settings.appendChild(excell)
-    domtree.appendChild(settings)
-    domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
+    # update excel-variables
     excell_templates[str(excel_id)] = [add_excel_variables[0].get(), data]
 
 
@@ -1449,9 +1280,9 @@ for i in range(15):
     temp.append(StringVar())
     temp.append(ttk.Entry(middleframe,
                           textvariable=temp[2],
-                          validate="focusout",
+                          validate="all",
                           width=11,
-                          validatecommand=(addTime_wrapper, i, "%P")))
+                          validatecommand=(addTime_wrapper, i, "%P", "%V")))
     button_inner = []
     for j in range(52):
         button_inner.append([Button(middleframe,
@@ -1479,6 +1310,12 @@ for i in range(15):
                                  command=lambda row=i, tasknumber=tasknumber: set_default_task(tasknumber=tasknumber,
                                                                                                row=row))
     person[i][5][0].bind('<Button-1>', lambda e, row=i: show_task_popup(e=e, row=row))
+
+# Name and working hours headlines
+ttk.Label(middleframe, text='Namn').grid(row=0, column=0, sticky='w')
+ttk.Label(middleframe, text='Arbetstid').grid(row=0, column=1, sticky='w')
+
+# Time headlines
 for i in range(14):
     if i == 0:
         ttk.Label(middleframe, text=str(i + 8)).grid(row=0, column=i * 4 + 3, sticky='w')
