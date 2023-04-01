@@ -1310,6 +1310,12 @@ for i in range(15):
                                  command=lambda row=i, tasknumber=tasknumber: set_default_task(tasknumber=tasknumber,
                                                                                                row=row))
     person[i][5][0].bind('<Button-1>', lambda e, row=i: show_task_popup(e=e, row=row))
+
+# Name and working hours headlines
+ttk.Label(middleframe, text='Namn').grid(row=0, column=0, sticky='w')
+ttk.Label(middleframe, text='Arbetstid').grid(row=0, column=1, sticky='w')
+
+# Time headlines
 for i in range(14):
     if i == 0:
         ttk.Label(middleframe, text=str(i + 8)).grid(row=0, column=i * 4 + 3, sticky='w')
