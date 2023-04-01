@@ -697,11 +697,9 @@ def show_add_excel():
 
 
 def save_excel():
-    domtree = xml.dom.minidom.parse('settings.xml')
-    settings = domtree.documentElement
-    excel_selected = settings.getElementsByTagName('excel_selected')[0]
-    excel_selected.setAttribute('id', excellwidgets[0].get())
-    domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
+    # saves selected excel template
+
+    XML_save_excel_template(excellwidgets)
     excel_selected_variable[0] = excellwidgets[0].get()
 
 
