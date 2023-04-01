@@ -5,8 +5,8 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.styles import PatternFill, Border, Side, Alignment, Font
 from openpyxl.utils import get_column_letter
 import codecs
-import random
 
+# Project modules
 from settings import getsettings, xml_new_task, xml_add_person, XML_delete_task, XML_save_excel_template, XML_save_excel
 from plan_breaks import plan_breaks
 
@@ -1007,15 +1007,27 @@ def about():
     Label(about_window, text=f'Rastplaneraren v. {version}').grid(column=1, row=5, padx=10, pady=10)
 
 
+def show_announcements(announcements):
+    announcements_window = Toplevel(root)
+    announcements_window.title('Nyheter')
+    announcements_window.attributes("-topmost", 1)
+
+    for i, a in enumerate(announcements):
+        Checkbutton(announcements_window, text='läst').grid(row=i, column=0)
+        Label(announcements_window, text=a, justify='left').grid(row=i, column=3, padx=4)
+    Button(announcements_window, text='ok').grid(row=i+1, column=0, columnspan=4, pady=5)
+
+
 tasksvariable = []
 breaksvariable = []
 workersminimum = []
 breakslength = []
 employees = []
 taskselector = []
+announcements = []
 excell_templates = {}
 excel_selected_variable = ['0']
-getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, employees, version, excell_templates, excel_selected_variable)
+getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, employees, version, excell_templates, excel_selected_variable, announcements)
 employees = sorted(employees)
 root = Tk()
 addTime_wrapper = root.register(add_time)
@@ -1035,6 +1047,9 @@ helpmenu = Menu(menubar, tearoff=0)
 helpmenu.add_command(label='Om', command=about)
 menubar.add_cascade(label='Hjälp', menu=helpmenu)
 root.config(menu=menubar)
+
+if len(announcements):
+    show_announcements(announcements)
 
 separatorStyle = ttk.Style()
 separatorStyle.configure('TSeparator', background='black')
@@ -1129,11 +1144,11 @@ ttk.Button(bottomframe,
                           workersminimum=workersminimum,
                           tasksvariable=tasksvariable,
                           employees=employees: plan_breaks(generateoptions,
-                                                                     person,
-                                                                     breakslength,
-                                                                     breaksvariable,
-                                                                      workersminimum,
-                                                                   tasksvariable,
+                                                           person,
+                                                           breakslength,
+                                                           breaksvariable,
+                                                           workersminimum,
+                                                           tasksvariable,
                                                            employees))\
     .grid(row=1, column=1, rowspan=3, ipady=12)
 

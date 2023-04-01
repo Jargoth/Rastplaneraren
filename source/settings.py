@@ -7,7 +7,7 @@ from openpyxl.styles import PatternFill, Border, Side, Alignment, Font
 from openpyxl.utils import get_column_letter
 
 
-def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, employees, version, excell_templates, excel_selected_variable):
+def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, employees, version, excell_templates, excel_selected_variable, announcements):
     try:
         domtree = xml.dom.minidom.parse('settings.xml')
     except:
@@ -699,6 +699,9 @@ def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, emp
     # upgrade to version 0.1.3
     if not v == '0.1.3':
         settings.setAttribute('version', version)
+        announcement = domtree.createElement('announcement')
+        announcement.appendChild(domtree.createTextNode('Nytt i version 0.1.3.\n*Felmaddelande när man försöker generera\n ett schema utan några val.\n*Meddelande om förändringar i nya versioner.'))
+        settings.appendChild(announcement)
 
         domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
 
@@ -746,6 +749,10 @@ def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, emp
         for task in tasks:
             temp.append([task.getAttribute('id'), task.getElementsByTagName('certified')[0].childNodes[0].nodeValue])
         employees.append([name, temp, default_task])
+
+    announcement = settings.getElementsByTagName('announcement')
+    for a in announcement:
+        announcements.append(a.childNodes[0].nodeValue)
 
     # load excell template
     excell_templates['0'] = ['Empty', []]
