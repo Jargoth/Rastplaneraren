@@ -1120,7 +1120,23 @@ ttk.Checkbutton(bottomframe,
                 onvalue=True, offvalue=False).grid(row=3,
                                                    column=0,
                                                    sticky='w')
-ttk.Button(bottomframe, text='planera\n raster', command=plan_breaks).grid(row=1, column=1, rowspan=3, ipady=12)
+ttk.Button(bottomframe,
+           text='planera\n raster',
+           command=lambda generateoptions=generateoptions,
+                          person=person,
+                          breakslength=breakslength,
+                          breaksvariable=breaksvariable,
+                          workersminimum=workersminimum,
+                          tasksvariable=tasksvariable,
+                          employees=employees: plan_breaks(generateoptions,
+                                                                     person,
+                                                                     breakslength,
+                                                                     breaksvariable,
+                                                                      workersminimum,
+                                                                   tasksvariable,
+                                                           employees))\
+    .grid(row=1, column=1, rowspan=3, ipady=12)
+
 Label(bottomframe, text=' ').grid(row=0, column=2, padx=10)
 ttk.Button(bottomframe, text='exportera\n till excell', command=export_to_excel).grid(row=1, column=3, rowspan=3,
                                                                                       ipady=12)
