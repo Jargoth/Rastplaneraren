@@ -16,3 +16,6 @@ source/__pycache__/settings.cpython-311.pyc
 source/main-Lappen.py
 source/settings-Lappen.xml
 -DESKTOP-NMNG2RK.gitignore
+-Lappen-2.gitignore
+.idea/workspace-Lappen-2.xml
+windows executable/settings.xml
