@@ -54,39 +54,68 @@ def button_color(row, col):
         person[row][4][col][1] = activetask.get()
 
 
-def add_time(row, workinghours):
+def add_time(row, workinghours, type):
     # This function is run when entering starting and stoping working hours on todays schedule
     # It shows buttons that corresponds to the correct quarter of an hour.
     # The buttons will be set to a color that curresponds to the default color of that employee.
 
-    # start by clearing all the buttons
-    for i in range(52):
-        person[int(row)][4][i][1] = -1  # the index number of the currents task is set to -1 (= no task)
-        person[int(row)][4][i][0].grid_remove()  # don't show the button
-    try:
-        # extracting start and stop time
-        startend = workinghours.split('-')
-        start = startend[0].split(':')
-        end = startend[1].split(':')
-        starthour = int((int(start[0]) - 8) * 4)
-        startmin = int(int(start[1]) / 15)
-        if starthour < 0:
-            starthour = 0
-            startmin = 0
-        endhour = int((int(end[0]) - 8) * 4)
-        endmin = int(int(end[1]) / 15)
-        curr = starthour + startmin
-        if curr < 0:
-            curr = 0
+    #check if the format is correct
+    if type == 'key':
 
-        # set the task index, set correct color, show the buttons
-        for i in range(endhour + endmin - starthour - startmin):
-            if i + curr < 52:
-                person[int(row)][4][i + curr][1] = person[int(row)][5][1]
-                person[int(row)][4][i + curr][0]['bg'] = f"#{tasksvariable[person[int(row)][5][1]][2]}"
-                person[int(row)][4][i + curr][0].grid()
-    except:
-        return False
+        # Checks if value is a number or - or :
+        valid = '0123456789:-'
+        for char in workinghours:
+            if char not in valid:
+                return False
+
+        # splits on - if - is present
+        if '-' in workinghours:
+            start_end = workinghours.split('-')
+        else:
+            start_end = [workinghours]
+
+        # splits on : if : is presnt
+        for se in start_end:
+            if ':' in se:
+                start = se.split(':')
+            else:
+                start = [se]
+            # returns False if more than 2 numbers is entered
+            for s in start:
+                if len(s) >= 3:
+                    return False
+
+    # prints out when leaving
+    elif type == 'focusout':
+        try:
+            # start by clearing all the buttons
+            for i in range(52):
+                person[int(row)][4][i][1] = -1  # the index number of the currents task is set to -1 (= no task)
+                person[int(row)][4][i][0].grid_remove()  # don't show the button
+
+            # extracting start and stop time
+            startend = workinghours.split('-')
+            start = startend[0].split(':')
+            end = startend[1].split(':')
+            starthour = int((int(start[0]) - 8) * 4)
+            startmin = int(int(start[1]) / 15)
+            if starthour < 0:
+                starthour = 0
+                startmin = 0
+            endhour = int((int(end[0]) - 8) * 4)
+            endmin = int(int(end[1]) / 15)
+            curr = starthour + startmin
+            if curr < 0:
+                curr = 0
+
+            # set the task index, set correct color, show the buttons
+            for i in range(endhour + endmin - starthour - startmin):
+                if i + curr < 52:
+                    person[int(row)][4][i + curr][1] = person[int(row)][5][1]
+                    person[int(row)][4][i + curr][0]['bg'] = f"#{tasksvariable[person[int(row)][5][1]][2]}"
+                    person[int(row)][4][i + curr][0].grid()
+        except:
+            return False
     return True
 
 
@@ -1251,9 +1280,9 @@ for i in range(15):
     temp.append(StringVar())
     temp.append(ttk.Entry(middleframe,
                           textvariable=temp[2],
-                          validate="focusout",
+                          validate="all",
                           width=11,
-                          validatecommand=(addTime_wrapper, i, "%P")))
+                          validatecommand=(addTime_wrapper, i, "%P", "%V")))
     button_inner = []
     for j in range(52):
         button_inner.append([Button(middleframe,
