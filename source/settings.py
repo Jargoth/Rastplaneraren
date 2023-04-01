@@ -696,8 +696,8 @@ def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, emp
 
     v = settings.getAttribute('version')
 
-    # upgrade to version 0.1.2
-    if not v == '0.1.2':
+    # upgrade to version 0.1.3
+    if not v == '0.1.3':
         settings.setAttribute('version', version)
 
         domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
