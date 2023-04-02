@@ -906,7 +906,7 @@ def xml_new_task(tasksvariable, newtaskname, newtaskcolor, newtaskauto_generate,
     domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
 
 
-def XML_delete_task(tasksvariable, task, employees):
+def xml_delete_task(tasksvariable, task, employees):
     # Deletes the task from the XML, and updates employees default task if needed
 
     # Load XML
@@ -939,7 +939,7 @@ def XML_delete_task(tasksvariable, task, employees):
     domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
 
 
-def XML_save_excel_template(ws, excell_templates, add_excel_variables):
+def xml_save_excel_template(ws, excell_templates, add_excel_variables):
 
 
     # Load XML
@@ -1095,11 +1095,23 @@ def XML_save_excel_template(ws, excell_templates, add_excel_variables):
     return data, excel_id
 
 
-def XML_save_excel(excellwidgets):
+def xml_save_excel(excellwidgets):
     # This function saves selected excel template to xml
 
     domtree = xml.dom.minidom.parse('settings.xml')
     settings = domtree.documentElement
     excel_selected = settings.getElementsByTagName('excel_selected')[0]
     excel_selected.setAttribute('id', excellwidgets[0].get())
+    domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
+
+
+def delete_announcement(id):
+    domtree = xml.dom.minidom.parse('settings.xml')
+    settings = domtree.documentElement
+    announcement = settings.getElementsByTagName('announcement')
+
+    # Goes thru every announcement, and removes the chosen one
+    for i, a in enumerate(announcement):
+        if i == id:
+            a.parentNode.removeChild(a)
     domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")

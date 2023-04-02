@@ -7,7 +7,8 @@ from openpyxl.utils import get_column_letter
 import codecs
 
 # Project modules
-from settings import getsettings, xml_new_task, xml_add_person, XML_delete_task, XML_save_excel_template, XML_save_excel
+from settings import getsettings, xml_new_task, xml_add_person, xml_delete_task, xml_save_excel_template,xml_save_excel
+from settings import delete_announcement
 from plan_breaks import plan_breaks
 
 version = '0.1.3'
@@ -352,7 +353,7 @@ def task_delete(task):
     else:
 
         # xml
-        XML_delete_task(tasksvariable, task, employees)
+        xml_delete_task(tasksvariable, task, employees)
 
         # taskvariable
         tasksvariable[task][1] = ''
@@ -679,7 +680,7 @@ def save_add_excel():
     ws = wb.active
 
     # add xlsx to xml
-    data, excel_id = XML_save_excel_template(ws, excell_templates, add_excel_variables)
+    data, excel_id = xml_save_excel_template(ws, excell_templates, add_excel_variables)
 
     # update excel-variables
     excell_templates[str(excel_id)] = [add_excel_variables[0].get(), data]
@@ -700,7 +701,7 @@ def show_add_excel():
 def save_excel():
     # saves selected excel template
 
-    XML_save_excel(excellwidgets)
+    xml_save_excel(excellwidgets)
     excel_selected_variable[0] = excellwidgets[0].get()
 
 
@@ -1011,11 +1012,27 @@ def show_announcements(announcements):
     announcements_window = Toplevel(root)
     announcements_window.title('Nyheter')
     announcements_window.attributes("-topmost", 1)
+    announcements_variables = []
 
     for i, a in enumerate(announcements):
-        Checkbutton(announcements_window, text='läst').grid(row=i, column=0)
+        announcements_variables.append(BooleanVar())
+        Checkbutton(announcements_window, text='läst',
+                    variable=announcements_variables[i], offvalue=False, onvalue=True).grid(row=i, column=0)
         Label(announcements_window, text=a, justify='left').grid(row=i, column=3, padx=4)
-    Button(announcements_window, text='ok').grid(row=i+1, column=0, columnspan=4, pady=5)
+    Button(announcements_window, text='ok',
+           command=lambda announcements_variables=announcements_variables, announcements_window=announcements_window: hide_announcements(announcements_variables, announcements_window))\
+        .grid(row=i+1, column=0, columnspan=4, pady=5)
+    
+
+def hide_announcements(announcements_variables, announcements_window):
+    # Closes announcements window and removes selected ones
+
+    # Delete announcement if it's marked as read
+    for i, a in enumerate(announcements_variables):
+        if a.get():
+            delete_announcement(i)
+    announcements_window.destroy()
+
 
 
 tasksvariable = []
