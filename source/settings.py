@@ -7,7 +7,7 @@ from openpyxl.styles import PatternFill, Border, Side, Alignment, Font
 from openpyxl.utils import get_column_letter
 
 
-def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, employees, version, excell_templates, excel_selected_variable):
+def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, employees, version, excell_templates, excel_selected_variable, announcements):
     try:
         domtree = xml.dom.minidom.parse('settings.xml')
     except:
@@ -696,9 +696,12 @@ def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, emp
 
     v = settings.getAttribute('version')
 
-    # upgrade to version 0.1.2
-    if not v == '0.1.2':
+    # upgrade to version 0.1.3
+    if not v == '0.1.3':
         settings.setAttribute('version', version)
+        announcement = domtree.createElement('announcement')
+        announcement.appendChild(domtree.createTextNode('Nytt i version 0.1.3.\n*Felmaddelande när man försöker generera\n ett schema utan några val.\n*Meddelande om förändringar i nya versioner.\n*Åtgärdat ett fel där minimiarbetstiden\n innan rast inte alltid efeterlevdes\n vid rastplanering.'))
+        settings.appendChild(announcement)
 
         domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
 
@@ -746,6 +749,10 @@ def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, emp
         for task in tasks:
             temp.append([task.getAttribute('id'), task.getElementsByTagName('certified')[0].childNodes[0].nodeValue])
         employees.append([name, temp, default_task])
+
+    announcement = settings.getElementsByTagName('announcement')
+    for a in announcement:
+        announcements.append(a.childNodes[0].nodeValue)
 
     # load excell template
     excell_templates['0'] = ['Empty', []]
@@ -899,7 +906,7 @@ def xml_new_task(tasksvariable, newtaskname, newtaskcolor, newtaskauto_generate,
     domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
 
 
-def XML_delete_task(tasksvariable, task, employees):
+def xml_delete_task(tasksvariable, task, employees):
     # Deletes the task from the XML, and updates employees default task if needed
 
     # Load XML
@@ -932,7 +939,7 @@ def XML_delete_task(tasksvariable, task, employees):
     domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
 
 
-def XML_save_excel_template(ws, excell_templates, add_excel_variables):
+def xml_save_excel_template(ws, excell_templates, add_excel_variables):
 
 
     # Load XML
@@ -1086,3 +1093,25 @@ def XML_save_excel_template(ws, excell_templates, add_excel_variables):
     domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
 
     return data, excel_id
+
+
+def xml_save_excel(excellwidgets):
+    # This function saves selected excel template to xml
+
+    domtree = xml.dom.minidom.parse('settings.xml')
+    settings = domtree.documentElement
+    excel_selected = settings.getElementsByTagName('excel_selected')[0]
+    excel_selected.setAttribute('id', excellwidgets[0].get())
+    domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
+
+
+def delete_announcement(id):
+    domtree = xml.dom.minidom.parse('settings.xml')
+    settings = domtree.documentElement
+    announcement = settings.getElementsByTagName('announcement')
+
+    # Goes thru every announcement, and removes the chosen one
+    for i, a in enumerate(announcement):
+        if i == id:
+            a.parentNode.removeChild(a)
+    domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")

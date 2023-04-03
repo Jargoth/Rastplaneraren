@@ -5,18 +5,19 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.styles import PatternFill, Border, Side, Alignment, Font
 from openpyxl.utils import get_column_letter
 import codecs
-import random
 
-from settings import *
+# Project modules
+from settings import getsettings, xml_new_task, xml_add_person, xml_delete_task, xml_save_excel_template, xml_save_excel
+from settings import delete_announcement
+from plan_breaks import plan_breaks
 
-version = '0.1.2'
+version = '0.1.3'
 
 
 def button_color(row, col):
     # This function is called when clicking on section of the schedule.
     # It changes that section to the color representing the task in activetask
     # if the section already is the selected colour the the closest is chosen instead
-
 
     numtries = 1  # number of tries to select the closest colour thats not activetask if the selected is the same
     forward = False
@@ -351,7 +352,7 @@ def task_delete(task):
     else:
 
         # xml
-        XML_delete_task(tasksvariable, task, employees)
+        xml_delete_task(tasksvariable, task, employees)
 
         # taskvariable
         tasksvariable[task][1] = ''
@@ -678,7 +679,7 @@ def save_add_excel():
     ws = wb.active
 
     # add xlsx to xml
-    data, excel_id = XML_save_excel_template(ws, excell_templates, add_excel_variables)
+    data, excel_id = xml_save_excel_template(ws, excell_templates, add_excel_variables)
 
     # update excel-variables
     excell_templates[str(excel_id)] = [add_excel_variables[0].get(), data]
@@ -697,11 +698,9 @@ def show_add_excel():
 
 
 def save_excel():
-    domtree = xml.dom.minidom.parse('settings.xml')
-    settings = domtree.documentElement
-    excel_selected = settings.getElementsByTagName('excel_selected')[0]
-    excel_selected.setAttribute('id', excellwidgets[0].get())
-    domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
+    # saves selected excel template
+
+    xml_save_excel(excellwidgets)
     excel_selected_variable[0] = excellwidgets[0].get()
 
 
@@ -987,224 +986,6 @@ def export_to_excel():
     wb.save('schema.xlsx')
 
 
-def plan_breaks():
-    workersminimum_override = 0
-    # autogenerate breaks, tasks and priority
-
-    # generate the breaks
-    if generateoptions[0].get():
-        availableworkers = []
-        for i in range(52):
-            availableworkers.append([0, 0])
-        for i in range(len(person)):
-            for j in range(52):
-                if person[i][4][j][1] != -1 and person[i][4][j][1] != 1:
-                    availableworkers[j][0] = availableworkers[j][0] + 1
-                if person[i][4][j][1] == 1:
-                    availableworkers[j][1] = availableworkers[j][1] + 1
-        for i in range(len(person)):
-            if person[i][2].get():
-                workingtime = person[i][2].get().split('-')
-                starttime = workingtime[0].split(':')
-                starttime = (int(starttime[0]) * 60) + int(starttime[1])
-                endtime = workingtime[1].split(':')
-                endtime = (int(endtime[0]) * 60) + int(endtime[1])
-                totaltime = int((endtime - starttime) / 60)
-                if (totaltime - 4) >= 0:  # if working long enough to get a break
-                    for breaknumber, bs in enumerate(breakslength[totaltime - 4]):
-                        if int(bs):
-                            for j in range(len(person[i][4])):
-                                if person[i][4][j][1] == 1:
-                                    starttime = 8 * 60 + j * 15
-                            bs = int(int(bs) / 15)
-                            temp = (int(starttime + int(breaksvariable[0][1]) - int(breaksvariable[0][0])) / 15) - 32
-                            notdone = 1
-                            forward = False
-                            numtries = 0
-                            maxminbreak = 0
-                            simultaneusbreaks = 1
-                            while notdone:
-                                ok = 0
-                                for b in range(bs):
-                                    if availableworkers[int(temp) + b][0] > (int(workersminimum[int((temp + b) / 4)]) + workersminimum_override) and \
-                                            availableworkers[int(temp)][1] == simultaneusbreaks - 1:
-                                        ok = ok + 1
-                                if ok == bs:
-
-                                    # calculate remaining working time including this break
-                                    remainingtime = 0
-                                    for remaining in range(52 - (int(temp) + 1)):
-                                        if person[i][4][int(temp) + remaining][1] > -1:
-                                            remainingtime = remainingtime + 1
-
-                                    # calculate min/max remaining time reqired
-                                    breaksremaining = 0
-                                    iteration = breaknumber
-                                    while iteration < 4:
-                                        if int(breakslength[totaltime - 4][iteration]):
-                                            breaksremaining = breaksremaining + 1
-                                        iteration = iteration + 1
-                                    remainingtimemin = int(breaksremaining * int(breaksvariable[0][0]) / 15)
-                                    remainingtimemax = int(breaksremaining * int(breaksvariable[0][1]) / 15)
-                                    iteration = breaknumber
-                                    while iteration < 4:
-                                        remainingtimemin = \
-                                            remainingtimemin + int(int(breakslength[totaltime - 4][iteration]) / 15)
-                                        remainingtimemax = \
-                                            remainingtimemax + int(int(breakslength[totaltime - 4][iteration]) / 15)
-                                        iteration = iteration + 1
-
-                                    # set the time offset to correct the break
-                                    if remainingtimemin <= remainingtime and remainingtimemax >= remainingtime:
-                                        offsettime = 0
-                                    elif remainingtime < remainingtimemin:
-                                        offsettime = remainingtime - remainingtimemin
-                                    elif remainingtime > remainingtimemax:
-                                        offsettime = remainingtime - remainingtimemax
-                                    else:
-                                        offsettime = 0
-
-                                    for b in range(bs):
-                                        availableworkers[int(temp) + b + offsettime][0] = \
-                                            availableworkers[int(temp) + offsettime][0] - 1
-                                        availableworkers[int(temp) + b + offsettime][1] = \
-                                            availableworkers[int(temp) + offsettime][1] + 1
-
-                                        person[i][4][int(temp) + b + offsettime][0]['bg'] = f'#{tasksvariable[1][2]}'
-                                        person[i][4][int(temp) + b + offsettime][1] = 1
-                                    notdone = 0
-
-                                elif forward:
-                                    temp = (int(starttime + int(breaksvariable[0][1]) - int(
-                                        breaksvariable[0][0])) / 15) - 32 + 1 + numtries
-                                    forward = False
-                                    numtries = numtries + 1
-                                    if temp - (int(starttime / 15) - 32) > int(int(breaksvariable[0][1]) / 15):
-                                        maxminbreak = maxminbreak + 1
-                                else:
-                                    temp = (int(starttime + int(breaksvariable[0][1]) - int(
-                                        breaksvariable[0][0])) / 15) - 32 - 1 - numtries
-                                    forward = True
-                                    if temp - (int(starttime / 15) - 32) < int(int(breaksvariable[0][0]) / 15):
-                                        maxminbreak = maxminbreak + 1
-                                if maxminbreak == 2:
-                                    simultaneusbreaks = simultaneusbreaks + 1
-                                    if simultaneusbreaks == 5:
-                                        simultaneusbreaks = 1
-                                        workersminimum_override = workersminimum_override - 1
-                                    numtries = 0
-                                    maxminbreak = 0
-                                    temp = \
-                                        (int(starttime + int(breaksvariable[0][1]) - int(breaksvariable[0][0])) / 15) - 32
-
-    # generate the tasks
-    if generateoptions[1].get():
-        for i in range(2, len(tasksvariable)):
-            if tasksvariable[i][3]:
-                nextemployee = 0
-                workers = []
-                for j, p in enumerate(person):
-                    if p[0].get():
-                        for employee in employees:
-                            if p[0].get().lower().capitalize() == employee[0]:
-                                for emptask in employee[1]:
-                                    if emptask[0] == tasksvariable[i][0] and eval(emptask[1]):
-                                        workers.append([j, 0])
-                random.shuffle(workers)
-                for quarter in range(52):
-                    done = False
-                    for p in person:
-                        if p[4][quarter][1] == i:
-                            done = True
-                            break
-                    if not done:
-                        for j in range(len(workers)):
-
-                            # see if there is 4 free quarters next, including this quarter
-                            num_free_quarter = 0
-                            for free_quarter in range(4):
-                                if (quarter + free_quarter) >= 52:
-                                    num_free_quarter = num_free_quarter + 1
-                                else:
-                                    if person[workers[nextemployee][0]][4][quarter + free_quarter][1] == 0:
-                                        num_free_quarter = num_free_quarter + 1
-                                    # see how much time to plan
-                                    required_quarter = 0
-                                    for p in person:
-                                        if p[4][quarter + free_quarter][1] != i:
-                                            required_quarter = required_quarter + 1
-                                        else:
-                                            break
-
-
-                            timesplanned = 0
-                            print(f'{i} {quarter} {employees[nextemployee][0]} {num_free_quarter} {required_quarter}')
-                            if person[workers[nextemployee][0]][4][quarter + timesplanned][1] == 0 and \
-                                    workers[nextemployee][1] < int(tasksvariable[i][6]) and \
-                                    (num_free_quarter >= 4 or num_free_quarter >= required_quarter):
-                                planned = False
-                                while timesplanned < int(tasksvariable[i][5]) / 15 and \
-                                        person[workers[nextemployee][0]][4][quarter + timesplanned][1] == 0:
-                                    if quarter + timesplanned < 52:
-                                        if person[workers[nextemployee][0]][4][quarter + timesplanned][1] == 0:
-                                            done = False
-                                            for p in person:
-                                                if p[4][quarter + timesplanned][1] == i:
-                                                    done = True
-                                                    break
-                                            if not done:
-                                                person[workers[nextemployee][0]][4][quarter + timesplanned][1] = i
-                                                person[workers[nextemployee][0]][4][quarter + timesplanned][0][
-                                                    'bg'] = f'#{tasksvariable[i][2]}'
-                                                planned = True
-                                    timesplanned = timesplanned + 1
-                                    if quarter + timesplanned == 52:
-                                        break
-
-                                if not planned:
-                                    nextemployee = nextemployee + 1
-                                    if nextemployee == len(workers):
-                                        nextemployee = 0
-                                if planned and timesplanned == (int(tasksvariable[i][5]) / 15):
-                                    workers[nextemployee][1] = workers[nextemployee][1] + 1
-                                    nextemployee = nextemployee + 1
-                                    if nextemployee == len(workers):
-                                        nextemployee = 0
-                                    break
-                            else:
-                                nextemployee = nextemployee + 1
-                                if nextemployee == len(workers):
-                                    nextemployee = 0
-
-    # generate the priorities
-    if generateoptions[2].get():
-        workers = []
-        for i, p in enumerate(person):
-            if p[0].get():
-                workers.append(i)
-        random.shuffle(workers)
-        nextworker = 0
-        for prioritynumber in range(1, len(workers) + 1):
-            prioritysetnumber = 0
-            for i in range(52):
-                for j in range(len(workers)):
-                    if prioritysetnumber == 4:
-                        prioritysetnumber = 0
-                        nextworker = nextworker + 1
-                        if nextworker == len(workers):
-                            nextworker = 0
-                    if person[workers[nextworker]][4][i][1] == 0 and not \
-                            person[workers[nextworker]][4][i][0]['text'] and prioritysetnumber < 4:
-                        person[workers[nextworker]][4][i][0]['text'] = prioritynumber
-                        prioritysetnumber = prioritysetnumber + 1
-                        break
-                    else:
-                        prioritysetnumber = 0
-                        nextworker = nextworker + 1
-                    if nextworker == len(workers):
-                        nextworker = 0
-
-
 def show_task_popup(e, row):
     person[row][6].tk_popup(e.x_root, e.y_root)
 
@@ -1226,15 +1007,43 @@ def about():
     Label(about_window, text=f'Rastplaneraren v. {version}').grid(column=1, row=5, padx=10, pady=10)
 
 
+def show_announcements(announcements):
+    announcements_window = Toplevel(root)
+    announcements_window.title('Nyheter')
+    announcements_window.attributes("-topmost", 1)
+    announcements_variables = []
+
+    for i, a in enumerate(announcements):
+        announcements_variables.append(BooleanVar())
+        Checkbutton(announcements_window, text='läst',
+                    variable=announcements_variables[i], offvalue=False, onvalue=True).grid(row=i, column=0)
+        Label(announcements_window, text=a, justify='left').grid(row=i, column=3, padx=4)
+    Button(announcements_window, text='ok',
+           command=lambda announcements_variables=announcements_variables, announcements_window=announcements_window: hide_announcements(announcements_variables, announcements_window))\
+        .grid(row=i+1, column=0, columnspan=4, pady=5)
+    
+
+def hide_announcements(announcements_variables, announcements_window):
+    # Closes announcements window and removes selected ones
+
+    # Delete announcement if it's marked as read
+    for i, a in enumerate(announcements_variables):
+        if a.get():
+            delete_announcement(i)
+    announcements_window.destroy()
+
+
+
 tasksvariable = []
 breaksvariable = []
 workersminimum = []
 breakslength = []
 employees = []
 taskselector = []
+announcements = []
 excell_templates = {}
 excel_selected_variable = ['0']
-getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, employees, version, excell_templates, excel_selected_variable)
+getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, employees, version, excell_templates, excel_selected_variable, announcements)
 employees = sorted(employees)
 root = Tk()
 addTime_wrapper = root.register(add_time)
@@ -1254,6 +1063,9 @@ helpmenu = Menu(menubar, tearoff=0)
 helpmenu.add_command(label='Om', command=about)
 menubar.add_cascade(label='Hjälp', menu=helpmenu)
 root.config(menu=menubar)
+
+if len(announcements):
+    show_announcements(announcements)
 
 separatorStyle = ttk.Style()
 separatorStyle.configure('TSeparator', background='black')
@@ -1339,7 +1151,23 @@ ttk.Checkbutton(bottomframe,
                 onvalue=True, offvalue=False).grid(row=3,
                                                    column=0,
                                                    sticky='w')
-ttk.Button(bottomframe, text='planera\n raster', command=plan_breaks).grid(row=1, column=1, rowspan=3, ipady=12)
+ttk.Button(bottomframe,
+           text='planera\n raster',
+           command=lambda generateoptions=generateoptions,
+                          person=person,
+                          breakslength=breakslength,
+                          breaksvariable=breaksvariable,
+                          workersminimum=workersminimum,
+                          tasksvariable=tasksvariable,
+                          employees=employees: plan_breaks(generateoptions,
+                                                           person,
+                                                           breakslength,
+                                                           breaksvariable,
+                                                           workersminimum,
+                                                           tasksvariable,
+                                                           employees))\
+    .grid(row=1, column=1, rowspan=3, ipady=12)
+
 Label(bottomframe, text=' ').grid(row=0, column=2, padx=10)
 ttk.Button(bottomframe, text='exportera\n till excell', command=export_to_excel).grid(row=1, column=3, rowspan=3,
                                                                                       ipady=12)

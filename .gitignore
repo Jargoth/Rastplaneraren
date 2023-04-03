@@ -19,3 +19,4 @@ source/settings-Lappen.xml
 -Lappen-2.gitignore
 .idea/workspace-Lappen-2.xml
 windows executable/settings.xml
+source/__pycache__/plan_breaks.cpython-310.pyc

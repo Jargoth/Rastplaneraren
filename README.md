@@ -4,6 +4,12 @@ A program to automaticly plan lunchbreaks for a supermarket checkout line.
 
 Changes:
 
+v. 0.1.3
+* Fixed some code aestethics
+* Added an error message when no options is selected when pressing "Planera raster"
+* Added a window with announcents of the changes in the new version
+* Fixed an error that minimum working hours before break didn't always work when planning breaks.
+
 v. 0.1.2
 * Fixed an issue with xml version update
 * Fixed some code aestethics and added comments
