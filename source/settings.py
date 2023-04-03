@@ -6,6 +6,30 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.styles import PatternFill, Border, Side, Alignment, Font
 from openpyxl.utils import get_column_letter
 
+def version(settings):
+    # Changes for different versions
+
+    # Load current version
+    v = settings.getAttribute('version')
+
+    # upgrade to version 0.1.3
+    if not v == '0.1.3':
+        settings.setAttribute('version', version)
+        announcement = domtree.createElement('announcement')
+        announcement.appendChild(domtree.createTextNode(
+            'Nytt i version 0.1.3.\n*Felmaddelande när man försöker generera\n ett schema utan några val.\n*Meddelande om förändringar i nya versioner.\n*Åtgärdat ett fel där minimiarbetstiden\n innan rast inte alltid efeterlevdes\n vid rastplanering.'))
+        settings.appendChild(announcement)
+
+        domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
+
+    # upgrade to version 0.1.4
+    if not v == '0.1.4':
+        settings.setAttribute('version', version)
+        announcement = domtree.createElement('announcement')
+        announcement.appendChild(domtree.createTextNode('Nytt i version 0.1.4.\n'))
+        settings.appendChild(announcement)
+
+        domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
 
 def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, employees, version, excell_templates, excel_selected_variable, announcements):
     try:
@@ -694,16 +718,7 @@ def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, emp
         domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
     settings = domtree.documentElement
 
-    v = settings.getAttribute('version')
-
-    # upgrade to version 0.1.3
-    if not v == '0.1.3':
-        settings.setAttribute('version', version)
-        announcement = domtree.createElement('announcement')
-        announcement.appendChild(domtree.createTextNode('Nytt i version 0.1.3.\n*Felmaddelande när man försöker generera\n ett schema utan några val.\n*Meddelande om förändringar i nya versioner.\n*Åtgärdat ett fel där minimiarbetstiden\n innan rast inte alltid efeterlevdes\n vid rastplanering.'))
-        settings.appendChild(announcement)
-
-        domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
+    version(settings)
 
     tasks = settings.getElementsByTagName('task')
     for task in tasks:

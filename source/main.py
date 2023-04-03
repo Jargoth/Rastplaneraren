@@ -11,7 +11,7 @@ from settings import getsettings, xml_new_task, xml_add_person, xml_delete_task,
 from settings import delete_announcement
 from plan_breaks import plan_breaks
 
-version = '0.1.3'
+version = '0.1.4'
 
 
 def button_color(row, col):
