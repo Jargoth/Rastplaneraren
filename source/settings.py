@@ -17,22 +17,23 @@ def update_version(version):
 
     # Load current version
     v = settings.getAttribute('version')
+    v = v.split('.')
 
     # upgrade to version 0.1.3
-    if not v == '0.1.3':
+    if int(v[0]) <= 0 and int(v[1]) <= 1 and int(v[2]) < 3:
         settings.setAttribute('version', version)
         announcement = domtree.createElement('announcement')
         announcement.appendChild(domtree.createTextNode(
-            'Nytt i version 0.1.3.\n*Felmaddelande när man försöker generera\n ett schema utan några val.\n*Meddelande om förändringar i nya versioner.\n*Åtgärdat ett fel där minimiarbetstiden\n innan rast inte alltid efeterlevdes\n vid rastplanering.'))
+            'Nytt i version 0.1.3.\n*Felmeddelande när man försöker generera\n ett schema utan några val.\n*Meddelande om förändringar i nya versioner.\n*Åtgärdat ett fel där minimiarbetstiden\n innan rast inte alltid efeterlevdes\n vid rastplanering.'))
         settings.appendChild(announcement)
 
         domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
 
     # upgrade to version 0.1.4
-    if not v == '0.1.4':
+    if int(v[0]) <= 0 and int(v[1]) <= 1 and int(v[2]) < 4:
         settings.setAttribute('version', version)
         announcement = domtree.createElement('announcement')
-        announcement.appendChild(domtree.createTextNode('Nytt i version 0.1.4.\n'))
+        announcement.appendChild(domtree.createTextNode('Nytt i version 0.1.4.\n*Nu loggas felen i mappen logs\n*Fixat ett fel i versionsmeddelandena.'))
         settings.appendChild(announcement)
 
         domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")

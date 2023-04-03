@@ -5,11 +5,34 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.styles import PatternFill, Border, Side, Alignment, Font
 from openpyxl.utils import get_column_letter
 import codecs
+import sys
+from pathlib import Path
+import datetime
+import os
+import os.path
 
 # Project modules
 from settings import getsettings, xml_new_task, xml_add_person, xml_delete_task, xml_save_excel_template, xml_save_excel
 from settings import delete_announcement
 from plan_breaks import plan_breaks
+
+# error logging
+path = Path(__file__).parent / "log"
+try:
+    files = os.listdir(path)
+    for file in files:
+        size = os.path.getsize(f'{path}/{file}')
+        if size == 0:
+            os.remove(f'{path}/{file}')
+except:
+    pass
+try:
+    os.mkdir(path)
+except:
+    pass
+time = datetime.datetime.now()
+file = f'error{time.year}-{time.month}-{time.day}_{time.hour}-{time.minute}-{time.second}.log'
+sys.stderr = open(f'{path}/{file}', 'w')
 
 version = '0.1.4'
 
@@ -391,7 +414,7 @@ def task_delete(task):
 
 def settings():
     # The settings window
-
+    raise ValueError('test')
     global settingsWindow
     global taskbutton
     global tasksframe
