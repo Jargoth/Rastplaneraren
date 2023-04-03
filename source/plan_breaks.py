@@ -118,7 +118,7 @@ def breaks(person, breakslength, breaksvariable, workersminimum, tasksvariable):
                                 temp = (int(starttime + int(breaksvariable[0][1]) - int(
                                     breaksvariable[0][0])) / 15) - 32 - 1 - numtries
                                 forward = True
-                                if temp - (int(starttime / 15) - 32) < int(int(breaksvariable[0][0]) / 15):
+                                if temp - (int(starttime / 15) - 32) - (b / 15) - 1 < int(int(breaksvariable[0][0]) / 15):
                                     maxminbreak = maxminbreak + 1
                             if maxminbreak == 2:
                                 simultaneusbreaks = simultaneusbreaks + 1

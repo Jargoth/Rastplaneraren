@@ -7,7 +7,7 @@ from openpyxl.utils import get_column_letter
 import codecs
 
 # Project modules
-from settings import getsettings, xml_new_task, xml_add_person, xml_delete_task, xml_save_excel_template,xml_save_excel
+from settings import getsettings, xml_new_task, xml_add_person, xml_delete_task, xml_save_excel_template, xml_save_excel
 from settings import delete_announcement
 from plan_breaks import plan_breaks
 
@@ -18,7 +18,6 @@ def button_color(row, col):
     # This function is called when clicking on section of the schedule.
     # It changes that section to the color representing the task in activetask
     # if the section already is the selected colour the the closest is chosen instead
-
 
     numtries = 1  # number of tries to select the closest colour thats not activetask if the selected is the same
     forward = False

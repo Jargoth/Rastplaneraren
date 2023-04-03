@@ -700,7 +700,7 @@ def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, emp
     if not v == '0.1.3':
         settings.setAttribute('version', version)
         announcement = domtree.createElement('announcement')
-        announcement.appendChild(domtree.createTextNode('Nytt i version 0.1.3.\n*Felmaddelande när man försöker generera\n ett schema utan några val.\n*Meddelande om förändringar i nya versioner.'))
+        announcement.appendChild(domtree.createTextNode('Nytt i version 0.1.3.\n*Felmaddelande när man försöker generera\n ett schema utan några val.\n*Meddelande om förändringar i nya versioner.\n*Åtgärdat ett fel där minimiarbetstiden\n innan rast inte alltid efeterlevdes\n vid rastplanering.'))
         settings.appendChild(announcement)
 
         domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
