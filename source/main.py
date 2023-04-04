@@ -5,34 +5,16 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.styles import PatternFill, Border, Side, Alignment, Font
 from openpyxl.utils import get_column_letter
 import codecs
-import sys
-from pathlib import Path
 import datetime
-import os
-import os.path
+
 
 # Project modules
 from settings import getsettings, xml_new_task, xml_add_person, xml_delete_task, xml_save_excel_template, xml_save_excel
 from settings import delete_announcement
 from plan_breaks import plan_breaks
+import logging
 
-# error logging
-path = Path(__file__).parent / "log"
-try:
-    files = os.listdir(path)
-    for file in files:
-        size = os.path.getsize(f'{path}/{file}')
-        if size == 0:
-            os.remove(f'{path}/{file}')
-except:
-    pass
-try:
-    os.mkdir(path)
-except:
-    pass
-time = datetime.datetime.now()
-file = f'error{time.year}-{time.month}-{time.day}_{time.hour}-{time.minute}-{time.second}.log'
-sys.stderr = open(f'{path}/{file}', 'w')
+log, logfile = logging.start()
 
 version = '0.1.4'
 
@@ -83,6 +65,12 @@ def add_time(row, workinghours, type):
     # It shows buttons that corresponds to the correct quarter of an hour.
     # The buttons will be set to a color that curresponds to the default color of that employee.
 
+    # logging
+    if log['add_time']:
+        time = datetime.datetime.now()
+        logfile.write(
+            f'{time.hour}:{time.minute}:{time.second} add_time: row: {row} workinghours: {workinghours} type: {type}\n')
+
     #check if the format is correct
     if type == 'key':
 
@@ -112,6 +100,7 @@ def add_time(row, workinghours, type):
     # prints out when leaving
     elif type == 'focusout':
         try:
+
             # start by clearing all the buttons
             for i in range(52):
                 person[int(row)][4][i][1] = -1  # the index number of the currents task is set to -1 (= no task)
@@ -138,6 +127,7 @@ def add_time(row, workinghours, type):
                     person[int(row)][4][i + curr][1] = person[int(row)][5][1]
                     person[int(row)][4][i + curr][0]['bg'] = f"#{tasksvariable[person[int(row)][5][1]][2]}"
                     person[int(row)][4][i + curr][0].grid()
+
         except:
             return False
     return True
@@ -150,8 +140,13 @@ def add_person(row, name):
 
     # check if there's a matching employee
     if name:
+        # logging
+        if log['add_name']:
+            time = datetime.datetime.now()
+            logfile.write(f'{time.hour}:{time.minute}:{time.second} add_name: row: {row} name: {name}\n')
+
         name = name.lower().capitalize()
-        person_id = -1  # -1 means the's no matching
+        person_id = -1  # -1 means there's no matching
         i = 0
         for (i, employee) in enumerate(employees):
             if name == employee[0]:
@@ -414,7 +409,6 @@ def task_delete(task):
 
 def settings():
     # The settings window
-    raise ValueError('test')
     global settingsWindow
     global taskbutton
     global tasksframe
