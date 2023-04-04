@@ -16,6 +16,11 @@ import logging
 
 log, logfile = logging.start()
 
+# logging
+if log['start_stop']:
+    time = datetime.datetime.now()
+    logfile.write(f'{time.hour}:{time.minute}:{time.second} start_stop: program started\n')
+
 version = '0.1.4'
 
 
@@ -1192,13 +1197,17 @@ ttk.Button(bottomframe,
                           breaksvariable=breaksvariable,
                           workersminimum=workersminimum,
                           tasksvariable=tasksvariable,
-                          employees=employees: plan_breaks(generateoptions,
+                          employees=employees,
+                          log=log,
+                          logfile=logfile: plan_breaks(generateoptions,
                                                            person,
                                                            breakslength,
                                                            breaksvariable,
                                                            workersminimum,
                                                            tasksvariable,
-                                                           employees))\
+                                                           employees,
+                                                       log,
+                                                       logfile))\
     .grid(row=1, column=1, rowspan=3, ipady=12)
 
 Label(bottomframe, text=' ').grid(row=0, column=2, padx=10)
@@ -1209,3 +1218,11 @@ root.columnconfigure(0, weight=1)
 root.rowconfigure(0, weight=1)
 
 root.mainloop()
+
+# logging
+if log['start_stop']:
+    time = datetime.datetime.now()
+    logfile.write(
+        f'{time.hour}:{time.minute}:{time.second} start_stop: program stopped\n')
+logfile.close()
+

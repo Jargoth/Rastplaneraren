@@ -5,7 +5,7 @@ import datetime
 import os
 import os.path
 
-def start(error=True, add_time=True, add_name=True, plan_breaks=True, change_task=True, export_to_excel=True):
+def start(error=True, add_time=True, add_name=True, plan_breaks=True, change_task=True, export_to_excel=True, start_stop=True):
     # start logging
 
     if error:
@@ -43,6 +43,8 @@ def start(error=True, add_time=True, add_name=True, plan_breaks=True, change_tas
         log_something = True
     elif export_to_excel:
         log_something = True
+    elif start_stop:
+        log_something = True
 
     if log_something:
         try:
@@ -56,6 +58,7 @@ def start(error=True, add_time=True, add_name=True, plan_breaks=True, change_tas
     log['plan_breaks'] = plan_breaks
     log['change_task'] = change_task
     log['export_to_excel'] = export_to_excel
+    log['start_stop'] = start_stop
 
     return log, log_file
 
