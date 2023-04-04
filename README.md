@@ -8,6 +8,7 @@ v. 0.1.4
 * Fixed some code aestethics
 * Fixed an error in version announcemts
 * Added error logging
+* Added logging of important events
 
 v. 0.1.3
 * Fixed some code aestethics
