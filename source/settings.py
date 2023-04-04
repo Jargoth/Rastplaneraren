@@ -457,3 +457,4 @@ def delete_announcement(id):
         if i == id:
             a.parentNode.removeChild(a)
     domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
+    

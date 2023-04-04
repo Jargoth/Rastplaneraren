@@ -24,6 +24,13 @@ def button_color(row, col):
     # It changes that section to the color representing the task in activetask
     # if the section already is the selected colour the the closest is chosen instead
 
+    # logging
+    if log['change_task']:
+        time = datetime.datetime.now()
+        task_name = tasksvariable[activetask.get()][1]
+        logfile.write(
+            f'{time.hour}:{time.minute}:{time.second} change_task: row: {row} column: {col} to_task: {task_name}\n')
+
     numtries = 1  # number of tries to select the closest colour thats not activetask if the selected is the same
     forward = False
 
@@ -832,6 +839,15 @@ def save_break():
 
 
 def export_to_excel():
+
+
+    # logging
+    if log['export_to_excel']:
+        time = datetime.datetime.now()
+        excel_template_title = excell_templates[excel_selected_variable[0]][0]
+        logfile.write(
+            f'{time.hour}:{time.minute}:{time.second} export_to_excel: template: {excel_template_title}\n')
+
     wb = Workbook()
     ws = wb.active
     ws.title = "Schema"
