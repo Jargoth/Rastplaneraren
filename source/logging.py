@@ -5,7 +5,8 @@ import datetime
 import os
 import os.path
 
-def start(error=True, add_time=True, add_name=True, plan_breaks=True, change_task=True, export_to_excel=True, start_stop=True):
+def start(error=True, add_time=True, add_name=True, plan_breaks=True, change_task=True, export_to_excel=True,
+          start_stop=True, set_default_task=True, show_announcements=True, delete_announcements=True):
     # start logging
 
     if error:
@@ -45,13 +46,19 @@ def start(error=True, add_time=True, add_name=True, plan_breaks=True, change_tas
         log_something = True
     elif start_stop:
         log_something = True
+    elif set_default_task:
+        log_something = True
+    elif show_announcements:
+        log_something = True
+    elif delete_announcements:
+        log_something = True
 
     if log_something:
         try:
             os.mkdir(path)
         except:
             pass
-        log_file = open(f'{path}/{file}', 'a')
+        log_file = f'{path}/{file}'
 
     log['add_time'] = add_time
     log['add_name'] = add_name
@@ -59,6 +66,9 @@ def start(error=True, add_time=True, add_name=True, plan_breaks=True, change_tas
     log['change_task'] = change_task
     log['export_to_excel'] = export_to_excel
     log['start_stop'] = start_stop
+    log['set_default_task'] = set_default_task
+    log['show_announcements'] = show_announcements
+    log['delete_announcements'] = delete_announcements
 
     return log, log_file
 

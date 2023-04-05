@@ -19,7 +19,8 @@ log, logfile = logging.start()
 # logging
 if log['start_stop']:
     time = datetime.datetime.now()
-    logfile.write(f'{time.hour}:{time.minute}:{time.second} start_stop: program started\n')
+    with open(logfile, 'a') as f:
+        f.write(f'{time.hour}:{time.minute}:{time.second} start_stop: program started\n')
 
 version = '0.1.4'
 
@@ -27,14 +28,17 @@ version = '0.1.4'
 def button_color(row, col):
     # This function is called when clicking on section of the schedule.
     # It changes that section to the color representing the task in activetask
-    # if the section already is the selected colour the the closest is chosen instead
+    # if the section already is the selected colour the closest is chosen instead
 
     # logging
     if log['change_task']:
         time = datetime.datetime.now()
         task_name = tasksvariable[activetask.get()][1]
-        logfile.write(
-            f'{time.hour}:{time.minute}:{time.second} change_task: row: {row} column: {col} to_task: {task_name}\n')
+        task_name_from = tasksvariable[person[row][4][col][1]][1]
+        temp = f'{str((int(col/4))+8)}:{str((col%4)*15)}'
+        with open(logfile, 'a') as f:
+            f.write(
+                f'{time.hour}:{time.minute}:{time.second} change_task: row: {row} time: {temp} to_task: {task_name} from_task: {task_name_from}\n')
 
     numtries = 1  # number of tries to select the closest colour thats not activetask if the selected is the same
     forward = False
@@ -56,6 +60,14 @@ def button_color(row, col):
                     person[row][4][col][0]['bg'] = f'#{tasksvariable[oldtask][2]}'
                     person[row][4][col][1] = oldtask
                     completed = True
+
+                    #logging
+                    if log['change_task']:
+                        time = datetime.datetime.now()
+                        task_name = tasksvariable[oldtask][1]
+                        with open(logfile, 'a') as f:
+                            f.write(
+                                f'{time.hour}:{time.minute}:{time.second} change_task: row: {row} time: {temp} change_to: {task_name}\n')
 
             else: #check backwards in the schedule
                 if person[row][4][col - numtries][1] == activetask.get():  # still the same so turn the other way
@@ -80,7 +92,8 @@ def add_time(row, workinghours, type):
     # logging
     if log['add_time']:
         time = datetime.datetime.now()
-        logfile.write(
+        with open(logfile, 'a') as f:
+            f.write(
             f'{time.hour}:{time.minute}:{time.second} add_time: row: {row} workinghours: {workinghours} type: {type}\n')
 
     #check if the format is correct
@@ -155,7 +168,8 @@ def add_person(row, name):
         # logging
         if log['add_name']:
             time = datetime.datetime.now()
-            logfile.write(f'{time.hour}:{time.minute}:{time.second} add_name: row: {row} name: {name}\n')
+            with open(logfile, 'a') as f:
+                f.write(f'{time.hour}:{time.minute}:{time.second} add_name: row: {row} name: {name}\n')
 
         name = name.lower().capitalize()
         person_id = -1  # -1 means there's no matching
@@ -850,8 +864,8 @@ def export_to_excel():
     if log['export_to_excel']:
         time = datetime.datetime.now()
         excel_template_title = excell_templates[excel_selected_variable[0]][0]
-        logfile.write(
-            f'{time.hour}:{time.minute}:{time.second} export_to_excel: template: {excel_template_title}\n')
+        with open(logfile, 'a') as f:
+            f.write(f'{time.hour}:{time.minute}:{time.second} export_to_excel: template: {excel_template_title}\n')
 
     wb = Workbook()
     ws = wb.active
@@ -1029,6 +1043,13 @@ def show_task_popup(e, row):
 
 
 def set_default_task(tasknumber, row):
+    # logging
+    if log['set_default_task']:
+        time = datetime.datetime.now()
+        task = tasksvariable[tasknumber][1]
+        with open(logfile, 'a') as f:
+            f.write(f'{time.hour}:{time.minute}:{time.second} set_default_task: row: {row} task: {task}\n')
+
     for col in person[row][4]:
         if int(col[1]) > -1:
             col[0]['bg'] = f'#{tasksvariable[tasknumber][2]}'
@@ -1046,6 +1067,13 @@ def about():
 
 
 def show_announcements(announcements):
+
+    # logging
+    if log['show_announcements']:
+        time = datetime.datetime.now()
+        with open(logfile, 'a') as f:
+            f.write(f'{time.hour}:{time.minute}:{time.second} show_announcements\n')
+
     announcements_window = Toplevel(root)
     announcements_window.title('Nyheter')
     announcements_window.attributes("-topmost", 1)
@@ -1067,6 +1095,12 @@ def hide_announcements(announcements_variables, announcements_window):
     # Delete announcement if it's marked as read
     for i, a in enumerate(announcements_variables):
         if a.get():
+            # logging
+            if log['delete_announcements']:
+                time = datetime.datetime.now()
+                with open(logfile, 'a') as f:
+                    f.write(f'{time.hour}:{time.minute}:{time.second} delete_announcement: {i}\n')
+
             delete_announcement(i)
     announcements_window.destroy()
 
@@ -1197,17 +1231,13 @@ ttk.Button(bottomframe,
                           breaksvariable=breaksvariable,
                           workersminimum=workersminimum,
                           tasksvariable=tasksvariable,
-                          employees=employees,
-                          log=log,
-                          logfile=logfile: plan_breaks(generateoptions,
+                          employees=employees: plan_breaks(generateoptions,
                                                            person,
                                                            breakslength,
                                                            breaksvariable,
                                                            workersminimum,
                                                            tasksvariable,
-                                                           employees,
-                                                       log,
-                                                       logfile))\
+                                                           employees))\
     .grid(row=1, column=1, rowspan=3, ipady=12)
 
 Label(bottomframe, text=' ').grid(row=0, column=2, padx=10)
@@ -1222,7 +1252,6 @@ root.mainloop()
 # logging
 if log['start_stop']:
     time = datetime.datetime.now()
-    logfile.write(
-        f'{time.hour}:{time.minute}:{time.second} start_stop: program stopped\n')
-logfile.close()
+    with open(logfile, 'a') as f:
+        f.write(f'{time.hour}:{time.minute}:{time.second} start_stop: program stopped\n')
 

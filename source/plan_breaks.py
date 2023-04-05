@@ -4,7 +4,11 @@ import random
 from tkinter import messagebox
 import datetime
 
-def plan_breaks(generateoptions, person, breakslength, breaksvariable, workersminimum, tasksvariable, employees, log, logfile):
+import logging
+
+log, logfile = logging.start()
+
+def plan_breaks(generateoptions, person, breakslength, breaksvariable, workersminimum, tasksvariable, employees):
     # autogenerate breaks, tasks and priority
 
 
@@ -18,8 +22,8 @@ def plan_breaks(generateoptions, person, breakslength, breaksvariable, workersmi
             options = f'{options}tasks '
         if generateoptions[2].get():
             options = f'{options}priority '
-        logfile.write(
-            f'{time.hour}:{time.minute}:{time.second} plan_breaks: generateoptions: {options}\n')
+        with open(logfile, 'a') as f:
+            f.write(f'{time.hour}:{time.minute}:{time.second} plan_breaks: generateoptions: {options}\n')
 
     # generate the breaks
     if generateoptions[0].get():
