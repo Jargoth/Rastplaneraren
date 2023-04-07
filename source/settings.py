@@ -2,9 +2,12 @@
 
 import xml.dom.minidom
 import codecs
-from openpyxl import Workbook, load_workbook
-from openpyxl.styles import PatternFill, Border, Side, Alignment, Font
 from openpyxl.utils import get_column_letter
+import datetime
+
+import logging
+
+log, logfile = logging.start()
 
 # project modules
 import default_settings
@@ -24,7 +27,7 @@ def update_version(version):
         settings.setAttribute('version', version)
         announcement = domtree.createElement('announcement')
         announcement.appendChild(domtree.createTextNode(
-            'Nytt i version 0.1.3.\n*Felmeddelande när man försöker generera\n ett schema utan några val.\n*Meddelande om förändringar i nya versioner.\n*Åtgärdat ett fel där minimiarbetstiden\n innan rast inte alltid efeterlevdes\n vid rastplanering.'))
+            'Nytt i version 0.1.3.\n*Felmeddelande när man försöker generera\n ett schema utan några val.\n*Meddelande om förändringar i nya versioner.\n*Åtgärdat ett fel där minimiarbetstiden\n innan rast inte alltid efterlevdes\n vid rastplanering.'))
         settings.appendChild(announcement)
 
         domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
@@ -59,10 +62,26 @@ def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, emp
             bool(eval(task.getElementsByTagName('default_certified')[0].childNodes[0].nodeValue.lower().capitalize())))
         temp.append(task.getElementsByTagName('schedule_length')[0].childNodes[0].nodeValue)
         temp.append(task.getElementsByTagName('schedule_max_times')[0].childNodes[0].nodeValue)
+
+        # logging
+        if log['load_task']:
+            time = datetime.datetime.now()
+            with open(logfile, 'a') as f:
+                f.write(f'{time.hour}:{time.minute}:{time.second} load_task: id: {temp[0]} name: {temp[1]} color: {temp[2]} auto_generate: {temp[3]} default_certified: {temp[4]} schedule_length: {temp[5]} schedule_max_times: {temp[6]}\n')
+
         tasksvariable.append(temp)
 
     breaks = settings.getElementsByTagName('break')
     for b in breaks:
+
+        # logging
+        if log['load_breaks']:
+            time = datetime.datetime.now()
+            min = b.getElementsByTagName('min')[0].childNodes[0].nodeValue
+            max = b.getElementsByTagName('max')[0].childNodes[0].nodeValue
+            with open(logfile, 'a') as f:
+                f.write(f'{time.hour}:{time.minute}:{time.second} load_breaks: min: {min} max: {max}\n')
+
         temp = []
         temp.append(b.getElementsByTagName('min')[0].childNodes[0].nodeValue)
         temp.append(b.getElementsByTagName('max')[0].childNodes[0].nodeValue)
@@ -70,12 +89,31 @@ def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, emp
 
     w = settings.getElementsByTagName('workers_minimum')
     for i in range(13):
+
+        # logging
+        if log['load_breaks']:
+            time = datetime.datetime.now()
+            workers = w[0].getElementsByTagName('h' + str(i + 8))[0].childNodes[0].nodeValue
+            with open(logfile, 'a') as f:
+                f.write(f'{time.hour}:{time.minute}:{time.second} load_workers_min: hour: {i + 8}-{i+9} workers: {workers}\n')
+
         workersminimum.append(w[0].getElementsByTagName('h' + str(i + 8))[0].childNodes[0].nodeValue)
 
     workingtime = settings.getElementsByTagName('workingtime')
     for i in range(12):
         c = []
         b = workingtime[0].getElementsByTagName('h' + str(i + 4))
+
+        # logging
+        if log['load_working_time']:
+            time = datetime.datetime.now()
+            first_break = b[0].getElementsByTagName('first_break')[0].childNodes[0].nodeValue
+            second_break = b[0].getElementsByTagName('second_break')[0].childNodes[0].nodeValue
+            third_break = b[0].getElementsByTagName('third_break')[0].childNodes[0].nodeValue
+            forth_break = b[0].getElementsByTagName('forth_break')[0].childNodes[0].nodeValue
+            with open(logfile, 'a') as f:
+                f.write(f'{time.hour}:{time.minute}:{time.second} load_working_time: working_time: {str(i + 4)} first_break: {first_break} second_break: {second_break} third_break: {third_break} forth_break: {forth_break}\n')
+
         c.append(b[0].getElementsByTagName('first_break')[0].childNodes[0].nodeValue)
         c.append(b[0].getElementsByTagName('second_break')[0].childNodes[0].nodeValue)
         c.append(b[0].getElementsByTagName('third_break')[0].childNodes[0].nodeValue)
@@ -88,12 +126,27 @@ def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, emp
         default_task = e.getElementsByTagName('default_task')[0].childNodes[0].nodeValue
         temp = []
         tasks = e.getElementsByTagName('task_settings')
+        temp_string = ''
         for task in tasks:
             temp.append([task.getAttribute('id'), task.getElementsByTagName('certified')[0].childNodes[0].nodeValue])
+            temp_string = f"{temp_string} task_id: {task.getAttribute('id')} task_certified: {task.getElementsByTagName('certified')[0].childNodes[0].nodeValue}"
         employees.append([name, temp, default_task])
+
+        # logging
+        if log['load_employees']:
+            time = datetime.datetime.now()
+            with open(logfile, 'a') as f:
+                f.write(f'{time.hour}:{time.minute}:{time.second} load_employees: name: {name}{temp_string}\n')
 
     announcement = settings.getElementsByTagName('announcement')
     for a in announcement:
+
+        # logging
+        if log['load_announcements']:
+            time = datetime.datetime.now()
+            with open(logfile, 'a') as f:
+                f.write(f'{time.hour}:{time.minute}:{time.second} load_announcements: {a.childNodes[0].nodeValue}\n')
+
         announcements.append(a.childNodes[0].nodeValue)
 
     # load excell template
@@ -125,10 +178,32 @@ def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, emp
             else:
                 temp['text'] = ''
             data.append(temp)
+
+            # logging
+            if log['load_excel_templates']:
+                time = datetime.datetime.now()
+                with open(logfile, 'a') as f:
+                    f.write(
+                        f'{time.hour}:{time.minute}:{time.second} load_excel_templates: cell_data: {temp}\n')
+
         title = excell.getElementsByTagName('title')
         excell_templates[excell.getAttribute('id')] = [title[0].childNodes[0].nodeValue, data]
+
+        # logging
+        if log['load_excel_templates']:
+            time = datetime.datetime.now()
+            with open(logfile, 'a') as f:
+                f.write(f"{time.hour}:{time.minute}:{time.second} load_excel_templates: title: {title[0].childNodes[0].nodeValue} id: {excell.getAttribute('id')}\n")
+
     excel_selected = settings.getElementsByTagName('excel_selected')[0]
     excel_selected_variable[0] = excel_selected.getAttribute('id')
+
+    # logging
+    if log['load_excel_selected']:
+        time = datetime.datetime.now()
+        with open(logfile, 'a') as f:
+            f.write(
+                f"{time.hour}:{time.minute}:{time.second} load_excel_selected: id: {excel_selected.getAttribute('id')}\n")
 
 
 def xml_add_person(name, tasksvariable, employees, i):

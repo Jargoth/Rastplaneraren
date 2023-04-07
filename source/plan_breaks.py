@@ -11,7 +11,6 @@ log, logfile = logging.start()
 def plan_breaks(generateoptions, person, breakslength, breaksvariable, workersminimum, tasksvariable, employees):
     # autogenerate breaks, tasks and priority
 
-
     # logging
     if log['plan_breaks']:
         time = datetime.datetime.now()
@@ -141,9 +140,25 @@ def breaks(person, breakslength, breaksvariable, workersminimum, tasksvariable):
                                     maxminbreak = maxminbreak + 1
                             if maxminbreak == 2:
                                 simultaneusbreaks = simultaneusbreaks + 1
+
+                                # logging
+                                if log['simultaneous_breaks']:
+                                    time = datetime.datetime.now()
+                                    with open(logfile, 'a') as f:
+                                        f.write(
+                                            f'{time.hour}:{time.minute}:{time.second} simultaneous_breaks: {simultaneusbreaks}\n')
+
                                 if simultaneusbreaks == 5:
                                     simultaneusbreaks = 1
                                     workersminimum_override = workersminimum_override - 1
+
+                                    # logging
+                                    if log['workers_minimum_override']:
+                                        time = datetime.datetime.now()
+                                        with open(logfile, 'a') as f:
+                                            f.write(
+                                                f'{time.hour}:{time.minute}:{time.second} workers_minimum_override: {workersminimum_override}\n')
+
                                 numtries = 0
                                 maxminbreak = 0
                                 temp = \
