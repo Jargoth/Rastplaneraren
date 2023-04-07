@@ -115,6 +115,14 @@ def breaks(person, breakslength, breaksvariable, workersminimum, tasksvariable):
                                 else:
                                     offsettime = 0
 
+                                if offsettime:
+                                    # logging
+                                    if log['move_break']:
+                                        time = datetime.datetime.now()
+                                        with open(logfile, 'a') as f:
+                                            f.write(
+                                                f'{time.hour}:{time.minute}:{time.second} move_break: {offsettime} person: {person[i][0].get()} break_number: {breaknumber}\n')
+
                                 for b in range(bs):
                                     availableworkers[int(temp) + b + offsettime][0] = \
                                         availableworkers[int(temp) + offsettime][0] - 1

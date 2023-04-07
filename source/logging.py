@@ -8,7 +8,8 @@ import os.path
 def start(error=True, add_time=True, add_name=True, plan_breaks=True, change_task=True, export_to_excel=True,
           start_stop=True, set_default_task=True, show_announcements=True, delete_announcements=True, load_task=True,
           load_breaks=True, load_workers_min=True, load_working_time=True, load_employees=True, load_announcements=True,
-          load_excel_templates=True, load_excel_selected=True, simultaneous_breaks=True, workers_minimum_override=True):
+          load_excel_templates=True, load_excel_selected=True, simultaneous_breaks=True, workers_minimum_override=True,
+          move_break=True):
     # start logging
 
     if error:
@@ -74,6 +75,8 @@ def start(error=True, add_time=True, add_name=True, plan_breaks=True, change_tas
         log_something = True
     elif workers_minimum_override:
         log_something = True
+    elif move_break:
+        log_something = True
 
     if log_something:
         try:
@@ -101,6 +104,7 @@ def start(error=True, add_time=True, add_name=True, plan_breaks=True, change_tas
         log['load_excel_selected'] = load_excel_selected
         log['simultaneous_breaks'] = simultaneous_breaks
         log['workers_minimum_override'] = workers_minimum_override
+        log['move_break'] = move_break
     else:
         return log, None
 
