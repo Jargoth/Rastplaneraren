@@ -9,6 +9,7 @@ v. 0.1.4
 * Fixed an error in version announcemts
 * Added error logging
 * Added logging of important events
+* Added validation on employees name on todays schedule
 
 v. 0.1.3
 * Fixed some code aestethics
