@@ -158,40 +158,50 @@ def add_time(row, workinghours, type):
     return True
 
 
-def add_person(row, name):
+def add_person(row, name, type):
     # This function is runned when you enter an employee name on todays schedule
     # It connects that name to correct employee to get the special settings for him/her
     # If a matching employee isn't found it adds a new with default settings
 
+    # check if the format is correct
+    if type == 'key':
+
+        # Checks if value is a number or - or :
+        valid = 'abcdefghijklmnopqrstuvwxyzåäöABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ üÜ'
+        for char in name:
+            if char not in valid:
+                return False
+
     # check if there's a matching employee
-    if name:
-        # logging
-        if log['add_name']:
-            time = datetime.datetime.now()
-            with open(logfile, 'a') as f:
-                f.write(f'{time.hour}:{time.minute}:{time.second} add_name: row: {row} name: {name}\n')
+    elif type == 'focusout':
+        if name:
+            # logging
+            if log['add_name']:
+                time = datetime.datetime.now()
+                with open(logfile, 'a') as f:
+                    f.write(f'{time.hour}:{time.minute}:{time.second} add_name: row: {row} name: {name}\n')
 
-        name = name.lower().capitalize()
-        person_id = -1  # -1 means there's no matching
-        i = 0
-        for (i, employee) in enumerate(employees):
-            if name == employee[0]:
-                person_id = i
+            name = name.lower().capitalize()
+            person_id = -1  # -1 means there's no matching
+            i = 0
+            for (i, employee) in enumerate(employees):
+                if name == employee[0]:
+                    person_id = i
 
-        # If there's a new employee
-        if person_id == -1:
-            person_id = xml_add_person(name, tasksvariable, employees, i)
+            # If there's a new employee
+            if person_id == -1:
+                person_id = xml_add_person(name, tasksvariable, employees, i)
 
-        # Set all variables to match the employee
-        default_task = employees[person_id][2]
-        task_color = tasksvariable[0][2]
-        default_task_number = 0
-        for tn, t in enumerate(tasksvariable):
-            if t[0] == default_task:
-                task_color = t[2]
-                default_task_number = tn
-        person[int(row)][5][0]['bg'] = f'#{task_color}'
-        person[int(row)][5][1] = default_task_number
+            # Set all variables to match the employee
+            default_task = employees[person_id][2]
+            task_color = tasksvariable[0][2]
+            default_task_number = 0
+            for tn, t in enumerate(tasksvariable):
+                if t[0] == default_task:
+                    task_color = t[2]
+                    default_task_number = tn
+            person[int(row)][5][0]['bg'] = f'#{task_color}'
+            person[int(row)][5][1] = default_task_number
 
     return True
 
@@ -1159,8 +1169,8 @@ for i in range(15):
     temp.append(StringVar())
     temp.append(ttk.Entry(middleframe,
                           textvariable=temp[0],
-                          validate="focusout",
-                          validatecommand=(addPerson_wrapper, i, "%P")))
+                          validate="all",
+                          validatecommand=(addPerson_wrapper, i, "%P", "%V")))
     temp.append(StringVar())
     temp.append(ttk.Entry(middleframe,
                           textvariable=temp[2],

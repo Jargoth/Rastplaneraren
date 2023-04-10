@@ -109,4 +109,3 @@ def start(error=True, add_time=True, add_name=True, plan_breaks=True, change_tas
         return log, None
 
     return log, log_file
-
