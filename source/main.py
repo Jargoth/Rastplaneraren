@@ -5,19 +5,40 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.styles import PatternFill, Border, Side, Alignment, Font
 from openpyxl.utils import get_column_letter
 import codecs
+import datetime
+
 
 # Project modules
 from settings import getsettings, xml_new_task, xml_add_person, xml_delete_task, xml_save_excel_template, xml_save_excel
 from settings import delete_announcement
 from plan_breaks import plan_breaks
+import log_system
 
-version = '0.1.3'
+log, logfile = logging.start()
+
+# logging
+if log['start_stop']:
+    time = datetime.datetime.now()
+    with open(logfile, 'a') as f:
+        f.write(f'{time.hour}:{time.minute}:{time.second} start_stop: program started\n')
+
+version = '0.1.4'
 
 
 def button_color(row, col):
     # This function is called when clicking on section of the schedule.
     # It changes that section to the color representing the task in activetask
-    # if the section already is the selected colour the the closest is chosen instead
+    # if the section already is the selected colour the closest is chosen instead
+
+    # logging
+    if log['change_task']:
+        time = datetime.datetime.now()
+        task_name = tasksvariable[activetask.get()][1]
+        task_name_from = tasksvariable[person[row][4][col][1]][1]
+        temp = f'{str((int(col/4))+8)}:{str((col%4)*15)}'
+        with open(logfile, 'a') as f:
+            f.write(
+                f'{time.hour}:{time.minute}:{time.second} change_task: row: {row} time: {temp} to_task: {task_name} from_task: {task_name_from}\n')
 
     numtries = 1  # number of tries to select the closest colour thats not activetask if the selected is the same
     forward = False
@@ -40,6 +61,14 @@ def button_color(row, col):
                     person[row][4][col][1] = oldtask
                     completed = True
 
+                    #logging
+                    if log['change_task']:
+                        time = datetime.datetime.now()
+                        task_name = tasksvariable[oldtask][1]
+                        with open(logfile, 'a') as f:
+                            f.write(
+                                f'{time.hour}:{time.minute}:{time.second} change_task: row: {row} time: {temp} change_to: {task_name}\n')
+
             else: #check backwards in the schedule
                 if person[row][4][col - numtries][1] == activetask.get():  # still the same so turn the other way
                     forward = True
@@ -59,6 +88,13 @@ def add_time(row, workinghours, type):
     # This function is run when entering starting and stoping working hours on todays schedule
     # It shows buttons that corresponds to the correct quarter of an hour.
     # The buttons will be set to a color that curresponds to the default color of that employee.
+
+    # logging
+    if log['add_time']:
+        time = datetime.datetime.now()
+        with open(logfile, 'a') as f:
+            f.write(
+            f'{time.hour}:{time.minute}:{time.second} add_time: row: {row} workinghours: {workinghours} type: {type}\n')
 
     #check if the format is correct
     if type == 'key':
@@ -89,6 +125,7 @@ def add_time(row, workinghours, type):
     # prints out when leaving
     elif type == 'focusout':
         try:
+
             # start by clearing all the buttons
             for i in range(52):
                 person[int(row)][4][i][1] = -1  # the index number of the currents task is set to -1 (= no task)
@@ -115,39 +152,59 @@ def add_time(row, workinghours, type):
                     person[int(row)][4][i + curr][1] = person[int(row)][5][1]
                     person[int(row)][4][i + curr][0]['bg'] = f"#{tasksvariable[person[int(row)][5][1]][2]}"
                     person[int(row)][4][i + curr][0].grid()
+
         except:
             return False
     return True
 
 
-def add_person(row, name):
+def add_person(row, name, type):
     # This function is runned when you enter an employee name on todays schedule
     # It connects that name to correct employee to get the special settings for him/her
     # If a matching employee isn't found it adds a new with default settings
 
+    # check if the format is correct
+    if type == 'key':
+
+        # Checks if value is a number or - or :
+        valid = 'abcdefghijklmnopqrstuvwxyzåäöABCDEFGHIJKLMNOPQRSTUVWXYZÅÄÖ üÜ'
+        for char in name:
+            if char not in valid:
+                return False
+
     # check if there's a matching employee
-    if name:
-        name = name.lower().capitalize()
-        person_id = -1  # -1 means the's no matching
-        i = 0
-        for (i, employee) in enumerate(employees):
-            if name == employee[0]:
-                person_id = i
+    elif type == 'focusout':
+        if name:
+            # logging
+            if log['add_name']:
+                time = datetime.datetime.now()
+                with open(logfile, 'a') as f:
+                    f.write(f'{time.hour}:{time.minute}:{time.second} add_name: row: {row} name: {name}\n')
 
-        # If there's a new employee
-        if person_id == -1:
-            person_id = xml_add_person(name, tasksvariable, employees, i)
+            name = name.lower().capitalize()
+            person_id = -1  # -1 means there's no matching
+            i = 0
+            for (i, employee) in enumerate(employees):
+                if name == employee[0]:
+                    person_id = i
 
-        # Set all variables to match the employee
-        default_task = employees[person_id][2]
-        task_color = tasksvariable[0][2]
-        default_task_number = 0
-        for tn, t in enumerate(tasksvariable):
-            if t[0] == default_task:
-                task_color = t[2]
-                default_task_number = tn
-        person[int(row)][5][0]['bg'] = f'#{task_color}'
-        person[int(row)][5][1] = default_task_number
+            # If there's a new employee
+            if person_id == -1:
+                person_id = xml_add_person(name, tasksvariable, employees, i)
+
+            # Set all variables to match the employee
+            default_task = employees[person_id][2]
+            task_color = tasksvariable[0][2]
+            default_task_number = 0
+            for tn, t in enumerate(tasksvariable):
+                if t[0] == default_task:
+                    task_color = t[2]
+                    default_task_number = tn
+            print(row)
+            person[int(row)][5][0]['bg'] = f'#{task_color}'
+            person[int(row)][5][1] = default_task_number
+
+            add_row()
 
     return True
 
@@ -391,7 +448,6 @@ def task_delete(task):
 
 def settings():
     # The settings window
-
     global settingsWindow
     global taskbutton
     global tasksframe
@@ -815,6 +871,15 @@ def save_break():
 
 
 def export_to_excel():
+
+
+    # logging
+    if log['export_to_excel']:
+        time = datetime.datetime.now()
+        excel_template_title = excell_templates[excel_selected_variable[0]][0]
+        with open(logfile, 'a') as f:
+            f.write(f'{time.hour}:{time.minute}:{time.second} export_to_excel: template: {excel_template_title}\n')
+
     wb = Workbook()
     ws = wb.active
     ws.title = "Schema"
@@ -889,7 +954,7 @@ def export_to_excel():
             i = i + 1
     tasknumber = 0
     activetasks = []
-    for row in range(15):
+    for row in range(len(person)):
         for col in range(52):
             if not person[row][4][col][1] + 1 in activetasks:
                 activetasks.append(person[row][4][col][1] + 1)
@@ -991,6 +1056,13 @@ def show_task_popup(e, row):
 
 
 def set_default_task(tasknumber, row):
+    # logging
+    if log['set_default_task']:
+        time = datetime.datetime.now()
+        task = tasksvariable[tasknumber][1]
+        with open(logfile, 'a') as f:
+            f.write(f'{time.hour}:{time.minute}:{time.second} set_default_task: row: {row} task: {task}\n')
+
     for col in person[row][4]:
         if int(col[1]) > -1:
             col[0]['bg'] = f'#{tasksvariable[tasknumber][2]}'
@@ -1008,6 +1080,13 @@ def about():
 
 
 def show_announcements(announcements):
+
+    # logging
+    if log['show_announcements']:
+        time = datetime.datetime.now()
+        with open(logfile, 'a') as f:
+            f.write(f'{time.hour}:{time.minute}:{time.second} show_announcements\n')
+
     announcements_window = Toplevel(root)
     announcements_window.title('Nyheter')
     announcements_window.attributes("-topmost", 1)
@@ -1029,8 +1108,57 @@ def hide_announcements(announcements_variables, announcements_window):
     # Delete announcement if it's marked as read
     for i, a in enumerate(announcements_variables):
         if a.get():
+            # logging
+            if log['delete_announcements']:
+                time = datetime.datetime.now()
+                with open(logfile, 'a') as f:
+                    f.write(f'{time.hour}:{time.minute}:{time.second} delete_announcement: {i}\n')
+
             delete_announcement(i)
     announcements_window.destroy()
+
+
+def add_row():
+
+    if not person:
+        row = 0
+    else:
+        row = len(person)
+    temp = []
+    temp.append(StringVar())
+    temp.append(ttk.Entry(scrollable_middleframe,
+                          textvariable=temp[0],
+                          validate="all",
+                          validatecommand=(addPerson_wrapper, row, "%P", "%V")))
+    temp.append(StringVar())
+    temp.append(ttk.Entry(scrollable_middleframe,
+                          textvariable=temp[2],
+                          validate="all",
+                          width=11,
+                          validatecommand=(addTime_wrapper, row, "%P", "%V")))
+    button_inner = []
+    for j in range(52):
+        button_inner.append([Button(scrollable_middleframe,
+                                    height=1,
+                                    width=2,
+                                    bg='#54FA9B',
+                                    command=lambda row=row, col=j: button_color(row=row, col=col)), -1])
+    temp.append(button_inner)
+    temp.append([Label(scrollable_middleframe, text='->', bg=f'#{tasksvariable[0][2]}'), 0])
+    temp.append(Menu(scrollable_middleframe, tearoff=False))
+    person.append(temp)
+    scrollable_middleframe.rowconfigure(row + 1, minsize=28)
+    person[row][1].grid(column=0, row=row + 1, sticky='wns', pady=1, padx=1)
+    person[row][3].grid(column=1, row=row + 1, sticky='wns', pady=1, padx=1)
+    person[row][5][0].grid(column=2, row=row + 1, sticky='wns', pady=1, padx=2)
+    for j in range(52):
+        person[row][4][j][0].grid(column=j + 3, row=row + 1, sticky='wn', padx=1, pady=1)
+        person[row][4][j][0].grid_remove()
+    for tasknumber, availabletask in enumerate(tasksvariable):
+        person[row][6].add_command(label=availabletask[1],
+                                 command=lambda row=row, tasknumber=tasknumber: set_default_task(tasknumber=tasknumber,
+                                                                                               row=row))
+    person[row][5][0].bind('<Button-1>', lambda e, row=row: show_task_popup(e=e, row=row))
 
 
 
@@ -1070,7 +1198,7 @@ if len(announcements):
 separatorStyle = ttk.Style()
 separatorStyle.configure('TSeparator', background='black')
 
-topframe = ttk.Frame(root, padding="3 3 3 3", height=50)
+topframe = ttk.Frame(root, padding="3 3 3 3")
 topframe.grid(column=0, row=0, sticky='nwes')
 activetask = IntVar()
 
@@ -1082,57 +1210,38 @@ activetask.set(1)
 
 middleframe = ttk.Frame(root, padding="3 3 3 3")
 middleframe.grid(column=0, row=1, sticky='nwes')
-for i in range(15):
-    temp = []
-    temp.append(StringVar())
-    temp.append(ttk.Entry(middleframe,
-                          textvariable=temp[0],
-                          validate="focusout",
-                          validatecommand=(addPerson_wrapper, i, "%P")))
-    temp.append(StringVar())
-    temp.append(ttk.Entry(middleframe,
-                          textvariable=temp[2],
-                          validate="all",
-                          width=11,
-                          validatecommand=(addTime_wrapper, i, "%P", "%V")))
-    button_inner = []
-    for j in range(52):
-        button_inner.append([Button(middleframe,
-                                    width=2,
-                                    bg='#54FA9B',
-                                    command=lambda row=i, col=j: button_color(row=row, col=col)), -1])
-    temp.append(button_inner)
-    temp.append([Label(middleframe, text='->', bg=f'#{tasksvariable[0][2]}'), 0])
-    temp.append(Menu(middleframe, tearoff=False))
-    person.append(temp)
-    for k in range(14):
-        ttk.Separator(middleframe,
-                      orient=VERTICAL).grid(column=(3 + 4 * k), row=1, rowspan=15, sticky='wns', padx=0)
 
-for i in range(15):
-    person[i][1].grid(column=0, row=i + 1, sticky='wn')
-    person[i][3].grid(column=1, row=i + 1, sticky='wn')
-    person[i][5][0].grid(column=2, row=i + 1, sticky='wn', pady=1, padx=2)
-    for j in range(52):
-        if j != 100:
-            person[i][4][j][0].grid(column=j + 3, row=i + 1, sticky='wn', padx=1, pady=1)
-            person[i][4][j][0].grid_remove()
-    for tasknumber, availabletask in enumerate(tasksvariable):
-        person[i][6].add_command(label=availabletask[1],
-                                 command=lambda row=i, tasknumber=tasknumber: set_default_task(tasknumber=tasknumber,
-                                                                                               row=row))
-    person[i][5][0].bind('<Button-1>', lambda e, row=i: show_task_popup(e=e, row=row))
+# scrollbar
+canvas = Canvas(middleframe, borderwidth=0, border=0)
+middleframe_scrollbar = ttk.Scrollbar(middleframe, orient="vertical", command=canvas.yview)
+scrollable_middleframe = ttk.Frame(canvas)
+scrollable_middleframe.bind(
+    "<Configure>",
+    lambda e: canvas.configure(
+        scrollregion=canvas.bbox("all")
+    )
+)
+canvas.create_window((0, 0), window=scrollable_middleframe, anchor="nw")
+canvas.configure(yscrollcommand=middleframe_scrollbar.set)
+canvas.grid(row=0, column=0, sticky='nwse')
+middleframe_scrollbar.grid(row=0, column=1, sticky='nes')
+
+add_row()
+
+for k in range(14):
+    ttk.Separator(scrollable_middleframe,
+                  orient=VERTICAL).grid(column=(3 + 4 * k), row=1, rowspan=1000, sticky='wns', padx=0)
 
 # Name and working hours headlines
-ttk.Label(middleframe, text='Namn').grid(row=0, column=0, sticky='w')
-ttk.Label(middleframe, text='Arbetstid').grid(row=0, column=1, sticky='w')
+ttk.Label(scrollable_middleframe, text='Namn').grid(row=0, column=0, sticky='w')
+ttk.Label(scrollable_middleframe, text='Arbetstid').grid(row=0, column=1, sticky='w')
 
 # Time headlines
 for i in range(14):
     if i == 0:
-        ttk.Label(middleframe, text=str(i + 8)).grid(row=0, column=i * 4 + 3, sticky='w')
+        ttk.Label(scrollable_middleframe, text=str(i + 8)).grid(row=0, column=i * 4 + 3, sticky='w')
     else:
-        ttk.Label(middleframe, text=str(i + 8)).grid(row=0, column=i * 4 + 2, columnspan=2)
+        ttk.Label(scrollable_middleframe, text=str(i + 8)).grid(row=0, column=i * 4 + 2, columnspan=2)
 
 bottomframe = ttk.Frame(root, padding="3 3 3 3", height=50)
 bottomframe.grid(column=0, row=2, sticky='nwes')
@@ -1172,7 +1281,21 @@ Label(bottomframe, text=' ').grid(row=0, column=2, padx=10)
 ttk.Button(bottomframe, text='exportera\n till excell', command=export_to_excel).grid(row=1, column=3, rowspan=3,
                                                                                       ipady=12)
 
+# configure grid size
+root.rowconfigure(1, weight=1)
 root.columnconfigure(0, weight=1)
-root.rowconfigure(0, weight=1)
+for j in range(52):
+    scrollable_middleframe.columnconfigure(j + 2, minsize=26)
+middleframe.columnconfigure(0, weight=1)
+middleframe.rowconfigure(0, weight=1)
+canvas.columnconfigure(0, weight=1)
+canvas.rowconfigure(0, weight=1)
 
 root.mainloop()
+
+# logging
+if log['start_stop']:
+    time = datetime.datetime.now()
+    with open(logfile, 'a') as f:
+        f.write(f'{time.hour}:{time.minute}:{time.second} start_stop: program stopped\n')
+

@@ -2,9 +2,27 @@
 
 import random
 from tkinter import messagebox
+import datetime
+
+import log_system
+
+log, logfile = logging.start()
 
 def plan_breaks(generateoptions, person, breakslength, breaksvariable, workersminimum, tasksvariable, employees):
     # autogenerate breaks, tasks and priority
+
+    # logging
+    if log['plan_breaks']:
+        time = datetime.datetime.now()
+        options = ''
+        if generateoptions[0].get():
+            options = f'{options}breaks '
+        if generateoptions[1].get():
+            options = f'{options}tasks '
+        if generateoptions[2].get():
+            options = f'{options}priority '
+        with open(logfile, 'a') as f:
+            f.write(f'{time.hour}:{time.minute}:{time.second} plan_breaks: generateoptions: {options}\n')
 
     # generate the breaks
     if generateoptions[0].get():
@@ -97,6 +115,14 @@ def breaks(person, breakslength, breaksvariable, workersminimum, tasksvariable):
                                 else:
                                     offsettime = 0
 
+                                if offsettime:
+                                    # logging
+                                    if log['move_break']:
+                                        time = datetime.datetime.now()
+                                        with open(logfile, 'a') as f:
+                                            f.write(
+                                                f'{time.hour}:{time.minute}:{time.second} move_break: {offsettime} person: {person[i][0].get()} break_number: {breaknumber}\n')
+
                                 for b in range(bs):
                                     availableworkers[int(temp) + b + offsettime][0] = \
                                         availableworkers[int(temp) + offsettime][0] - 1
@@ -122,9 +148,25 @@ def breaks(person, breakslength, breaksvariable, workersminimum, tasksvariable):
                                     maxminbreak = maxminbreak + 1
                             if maxminbreak == 2:
                                 simultaneusbreaks = simultaneusbreaks + 1
+
+                                # logging
+                                if log['simultaneous_breaks']:
+                                    time = datetime.datetime.now()
+                                    with open(logfile, 'a') as f:
+                                        f.write(
+                                            f'{time.hour}:{time.minute}:{time.second} simultaneous_breaks: {simultaneusbreaks}\n')
+
                                 if simultaneusbreaks == 5:
                                     simultaneusbreaks = 1
                                     workersminimum_override = workersminimum_override - 1
+
+                                    # logging
+                                    if log['workers_minimum_override']:
+                                        time = datetime.datetime.now()
+                                        with open(logfile, 'a') as f:
+                                            f.write(
+                                                f'{time.hour}:{time.minute}:{time.second} workers_minimum_override: {workersminimum_override}\n')
+
                                 numtries = 0
                                 maxminbreak = 0
                                 temp = \
