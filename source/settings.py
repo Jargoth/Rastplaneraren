@@ -7,7 +7,7 @@ import datetime
 
 import log_system
 
-log, logfile = logging.start()
+log, logfile = log_system.start()
 
 # project modules
 import default_settings

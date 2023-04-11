@@ -14,7 +14,7 @@ from settings import delete_announcement
 from plan_breaks import plan_breaks
 import log_system
 
-log, logfile = logging.start()
+log, logfile = log_system.start()
 
 # logging
 if log['start_stop']:

@@ -26,3 +26,6 @@ source/__pycache__/default_settings.cpython-311.pyc
 source/__pycache__/plan_breaks.cpython-311.pyc
 source/log/error2023-4-11_11-39-34.log
 source/log/log2023-4-11.log
+source/__pycache__/log_system.cpython-310.pyc
+windows executable/.~lock.schema.xlsx\#
+windows executable/schema.xlsx
