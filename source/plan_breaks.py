@@ -4,7 +4,7 @@ import random
 from tkinter import messagebox
 import datetime
 
-import logging
+import log_system
 
 log, logfile = logging.start()
 

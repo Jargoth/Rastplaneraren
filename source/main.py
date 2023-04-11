@@ -12,7 +12,7 @@ import datetime
 from settings import getsettings, xml_new_task, xml_add_person, xml_delete_task, xml_save_excel_template, xml_save_excel
 from settings import delete_announcement
 from plan_breaks import plan_breaks
-import logging
+import log_system
 
 log, logfile = logging.start()
 

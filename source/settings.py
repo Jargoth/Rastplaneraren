@@ -5,7 +5,7 @@ import codecs
 from openpyxl.utils import get_column_letter
 import datetime
 
-import logging
+import log_system
 
 log, logfile = logging.start()
 
