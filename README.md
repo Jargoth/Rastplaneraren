@@ -10,7 +10,9 @@ v. 0.1.4
 * Added error logging
 * Added logging of important events
 * Added validation on employees name on todays schedule
-* Design improvements on todays schedule. Minimizing redrawing of widgets wchich should improve performance.
+* Design improvements on todays schedule.
+* Minimizing redrawing of widgets wchich should improve performance.
+* Unlimited employees on todays schedule instead of only 15.
 
 v. 0.1.3
 * Fixed some code aestethics
