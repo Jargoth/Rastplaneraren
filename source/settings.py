@@ -7,7 +7,7 @@ import datetime
 
 import logging
 
-log, logfile = logging.start()
+log, logfile = logging.start(error=False)
 
 # project modules
 import default_settings
@@ -36,7 +36,7 @@ def update_version(version):
     if int(v[0]) <= 0 and int(v[1]) <= 1 and int(v[2]) < 4:
         settings.setAttribute('version', version)
         announcement = domtree.createElement('announcement')
-        announcement.appendChild(domtree.createTextNode('Nytt i version 0.1.4.\n*Nu loggas felen i mappen logs\n*Fixat ett fel i versionsmeddelandena.\n*Loggar fel.\n*Loggar viktiga händelser\n*Validering av datan som skrivs in på namn\n på dagens schema'))
+        announcement.appendChild(domtree.createTextNode('Nytt i version 0.1.4.\n*Nu loggas felen i mappen logs\n*Fixat ett fel i versionsmeddelandena.\n*Loggar fel.\n*Loggar viktiga händelser\n*Validering av datan som skrivs in på namn\n på dagens schema\n*Designförbättring på dagens schema'))
         settings.appendChild(announcement)
 
         domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")

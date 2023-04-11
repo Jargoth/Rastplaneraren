@@ -14,7 +14,7 @@ from settings import delete_announcement
 from plan_breaks import plan_breaks
 import logging
 
-log, logfile = logging.start()
+log, logfile = logging.start(error=False)
 
 # logging
 if log['start_stop']:
@@ -1115,6 +1115,33 @@ def hide_announcements(announcements_variables, announcements_window):
     announcements_window.destroy()
 
 
+def add_row():
+
+    temp = []
+    temp.append(StringVar())
+    temp.append(ttk.Entry(middleframe,
+                          textvariable=temp[0],
+                          validate="all",
+                          validatecommand=(addPerson_wrapper, i, "%P", "%V")))
+    temp.append(StringVar())
+    temp.append(ttk.Entry(middleframe,
+                          textvariable=temp[2],
+                          validate="all",
+                          width=11,
+                          validatecommand=(addTime_wrapper, i, "%P", "%V")))
+    button_inner = []
+    for j in range(52):
+        button_inner.append([Button(middleframe,
+                                    height=1,
+                                    width=2,
+                                    bg='#54FA9B',
+                                    command=lambda row=i, col=j: button_color(row=row, col=col)), -1])
+    temp.append(button_inner)
+    temp.append([Label(middleframe, text='->', bg=f'#{tasksvariable[0][2]}'), 0])
+    temp.append(Menu(middleframe, tearoff=False))
+    person.append(temp)
+
+
 
 tasksvariable = []
 breaksvariable = []
@@ -1152,7 +1179,7 @@ if len(announcements):
 separatorStyle = ttk.Style()
 separatorStyle.configure('TSeparator', background='black')
 
-topframe = ttk.Frame(root, padding="3 3 3 3", height=50)
+topframe = ttk.Frame(root, padding="3 3 3 3")
 topframe.grid(column=0, row=0, sticky='nwes')
 activetask = IntVar()
 
@@ -1164,41 +1191,23 @@ activetask.set(1)
 
 middleframe = ttk.Frame(root, padding="3 3 3 3")
 middleframe.grid(column=0, row=1, sticky='nwes')
-for i in range(15):
-    temp = []
-    temp.append(StringVar())
-    temp.append(ttk.Entry(middleframe,
-                          textvariable=temp[0],
-                          validate="all",
-                          validatecommand=(addPerson_wrapper, i, "%P", "%V")))
-    temp.append(StringVar())
-    temp.append(ttk.Entry(middleframe,
-                          textvariable=temp[2],
-                          validate="all",
-                          width=11,
-                          validatecommand=(addTime_wrapper, i, "%P", "%V")))
-    button_inner = []
-    for j in range(52):
-        button_inner.append([Button(middleframe,
-                                    width=2,
-                                    bg='#54FA9B',
-                                    command=lambda row=i, col=j: button_color(row=row, col=col)), -1])
-    temp.append(button_inner)
-    temp.append([Label(middleframe, text='->', bg=f'#{tasksvariable[0][2]}'), 0])
-    temp.append(Menu(middleframe, tearoff=False))
-    person.append(temp)
-    for k in range(14):
-        ttk.Separator(middleframe,
-                      orient=VERTICAL).grid(column=(3 + 4 * k), row=1, rowspan=15, sticky='wns', padx=0)
 
-for i in range(15):
-    person[i][1].grid(column=0, row=i + 1, sticky='wn')
-    person[i][3].grid(column=1, row=i + 1, sticky='wn')
-    person[i][5][0].grid(column=2, row=i + 1, sticky='wn', pady=1, padx=2)
+add_row()
+
+for k in range(14):
+    ttk.Separator(middleframe,
+                  orient=VERTICAL).grid(column=(3 + 4 * k), row=1, rowspan=15, sticky='wns', padx=0)
+
+for i in range(len(person)):
+    middleframe.rowconfigure(i + 1, minsize=28)
+    person[i][1].grid(column=0, row=i + 1, sticky='wns', pady=1, padx=1)
+    person[i][3].grid(column=1, row=i + 1, sticky='wns', pady=1, padx=1)
+    person[i][5][0].grid(column=2, row=i + 1, sticky='wns', pady=1, padx=2)
     for j in range(52):
         if j != 100:
             person[i][4][j][0].grid(column=j + 3, row=i + 1, sticky='wn', padx=1, pady=1)
             person[i][4][j][0].grid_remove()
+            middleframe.columnconfigure(j + 2, minsize=26)
     for tasknumber, availabletask in enumerate(tasksvariable):
         person[i][6].add_command(label=availabletask[1],
                                  command=lambda row=i, tasknumber=tasknumber: set_default_task(tasknumber=tasknumber,
@@ -1253,9 +1262,7 @@ ttk.Button(bottomframe,
 Label(bottomframe, text=' ').grid(row=0, column=2, padx=10)
 ttk.Button(bottomframe, text='exportera\n till excell', command=export_to_excel).grid(row=1, column=3, rowspan=3,
                                                                                       ipady=12)
-
-root.columnconfigure(0, weight=1)
-root.rowconfigure(0, weight=1)
+root.rowconfigure(1, weight=1)
 
 root.mainloop()
 
