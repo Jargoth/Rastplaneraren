@@ -14,7 +14,7 @@ from settings import delete_announcement
 from plan_breaks import plan_breaks
 import log_system
 
-log, logfile = log_system.start()
+log, logfile = log_system.start(error=False)
 
 # logging
 if log['start_stop']:
@@ -22,7 +22,7 @@ if log['start_stop']:
     with open(logfile, 'a') as f:
         f.write(f'{time.hour}:{time.minute}:{time.second} start_stop: program started\n')
 
-version = '0.1.4'
+version = '0.1.5'
 
 
 def button_color(row, col):
@@ -1152,7 +1152,7 @@ def add_row():
     person[row][3].grid(column=1, row=row + 1, sticky='wns', pady=1, padx=1)
     person[row][5][0].grid(column=2, row=row + 1, sticky='wns', pady=1, padx=2)
     for j in range(52):
-        person[row][4][j][0].grid(column=j + 3, row=row + 1, sticky='wn', padx=1, pady=1)
+        person[row][4][j][0].grid(column=j + 4 + int(j / 4), row=row + 1, sticky='wn', padx=1, pady=1)
         person[row][4][j][0].grid_remove()
     for tasknumber, availabletask in enumerate(tasksvariable):
         person[row][6].add_command(label=availabletask[1],
@@ -1171,12 +1171,14 @@ taskselector = []
 announcements = []
 excell_templates = {}
 excel_selected_variable = ['0']
-getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, employees, version, excell_templates, excel_selected_variable, announcements)
+general_settings = []
+getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, employees, version, excell_templates, excel_selected_variable, announcements, general_settings)
+print(general_settings)
 employees = sorted(employees)
 root = Tk()
 addTime_wrapper = root.register(add_time)
 addPerson_wrapper = root.register(add_person)
-root.geometry("1650x600")
+root.geometry("1700x600")
 person = []
 
 root.title("Rastplaneraren")
@@ -1230,7 +1232,7 @@ add_row()
 
 for k in range(14):
     ttk.Separator(scrollable_middleframe,
-                  orient=VERTICAL).grid(column=(3 + 4 * k), row=1, rowspan=1000, sticky='wns', padx=0)
+                  orient=VERTICAL).grid(column=(3 + 5 * k), row=1, rowspan=1000, sticky='ns', padx=1)
 
 # Name and working hours headlines
 ttk.Label(scrollable_middleframe, text='Namn').grid(row=0, column=0, sticky='w')
@@ -1239,9 +1241,9 @@ ttk.Label(scrollable_middleframe, text='Arbetstid').grid(row=0, column=1, sticky
 # Time headlines
 for i in range(14):
     if i == 0:
-        ttk.Label(scrollable_middleframe, text=str(i + 8)).grid(row=0, column=i * 4 + 3, sticky='w')
+        ttk.Label(scrollable_middleframe, text=str(i + 8)).grid(row=0, column=i * 4 + 2, columnspan=3)
     else:
-        ttk.Label(scrollable_middleframe, text=str(i + 8)).grid(row=0, column=i * 4 + 2, columnspan=2)
+        ttk.Label(scrollable_middleframe, text=str(i + 8)).grid(row=0, column=i * 5 + 2, columnspan=3)
 
 bottomframe = ttk.Frame(root, padding="3 3 3 3", height=50)
 bottomframe.grid(column=0, row=2, sticky='nwes')
@@ -1285,7 +1287,7 @@ ttk.Button(bottomframe, text='exportera\n till excell', command=export_to_excel)
 root.rowconfigure(1, weight=1)
 root.columnconfigure(0, weight=1)
 for j in range(52):
-    scrollable_middleframe.columnconfigure(j + 2, minsize=26)
+    scrollable_middleframe.columnconfigure(j + 4 + int(j / 4), minsize=26)
 middleframe.columnconfigure(0, weight=1)
 middleframe.rowconfigure(0, weight=1)
 canvas.columnconfigure(0, weight=1)

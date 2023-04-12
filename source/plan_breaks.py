@@ -6,7 +6,7 @@ import datetime
 
 import log_system
 
-log, logfile = log_system.start()
+log, logfile = log_system.start(error=False)
 
 def plan_breaks(generateoptions, person, breakslength, breaksvariable, workersminimum, tasksvariable, employees):
     # autogenerate breaks, tasks and priority

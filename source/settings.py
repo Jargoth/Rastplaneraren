@@ -5,12 +5,11 @@ import codecs
 from openpyxl.utils import get_column_letter
 import datetime
 
-import log_system
-
-log, logfile = log_system.start()
-
 # project modules
 import default_settings
+import log_system
+
+log, logfile = log_system.start(error=False)
 
 def update_version(version):
     # Changes for different versions
@@ -41,7 +40,25 @@ def update_version(version):
 
         domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
 
-def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, employees, version, excell_templates, excel_selected_variable, announcements):
+    # upgrade to version 0.1.5
+    if int(v[0]) <= 0 and int(v[1]) <= 1 and int(v[2]) < 5:
+        settings.setAttribute('version', version)
+        announcement = domtree.createElement('announcement')
+        announcement.appendChild(domtree.createTextNode('Nytt i version 0.1.5\n*Fixat ett litet fel på dagens schema.\n*Lagt till möjligheten att ändra öppettiderna.'))
+        settings.appendChild(announcement)
+
+        general_settings = domtree.createElement('general_settings')
+        opening_hours = domtree.createElement('opening_hours')
+        opening_hours.appendChild(domtree.createTextNode('8'))
+        closing_hours = domtree.createElement('closing_hours')
+        closing_hours.appendChild(domtree.createTextNode('21'))
+        general_settings.appendChild(opening_hours)
+        general_settings.appendChild(closing_hours)
+        settings.appendChild(general_settings)
+
+        domtree.writexml(codecs.open('settings.xml', "w", "utf-8"), encoding="utf-8")
+
+def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, employees, version, excell_templates, excel_selected_variable, announcements, general_settings):
     try:
         domtree = xml.dom.minidom.parse('settings.xml')
     except:
@@ -204,6 +221,18 @@ def getsettings(tasksvariable, breaksvariable, workersminimum, breakslength, emp
         with open(logfile, 'a') as f:
             f.write(
                 f"{time.hour}:{time.minute}:{time.second} load_excel_selected: id: {excel_selected.getAttribute('id')}\n")
+
+    # Load general_settings
+    gs = settings.getElementsByTagName('general_settings')[0]
+    general_settings.append(gs.getElementsByTagName('opening_hours')[0].childNodes[0].nodeValue)
+    general_settings.append(gs.getElementsByTagName('closing_hours')[0].childNodes[0].nodeValue)
+
+    # logging
+    if log['load_general_settings']:
+        time = datetime.datetime.now()
+        with open(logfile, 'a') as f:
+            f.write(
+                f"{time.hour}:{time.minute}:{time.second} load_general_settings: opening_hours: {general_settings[0]} closing_hours: {general_settings[1]}\n")
 
 
 def xml_add_person(name, tasksvariable, employees, i):

@@ -14,6 +14,7 @@ def set_default(version):
         breaks_length(domtree, settings)
         excel_templates(domtree, settings)
         excel_selected(domtree, settings)
+        general_settings(domtree, settings)
 
         domtree.appendChild(settings)
 
@@ -711,3 +712,15 @@ def excel_selected(domtree, settings):
         excel_selected = domtree.createElement('excel_selected')
         excel_selected.setAttribute('id', '1')
         settings.appendChild(excel_selected)
+
+
+def general_settings(domtree, settings):
+
+        general_settings = domtree.createElement('general_settings')
+        opening_hours = domtree.createElement('opening_hours')
+        opening_hours.appendChild(domtree.createTextNode('8'))
+        closing_hours = domtree.createElement('closing_hours')
+        closing_hours.appendChild(domtree.createTextNode('21'))
+        general_settings.appendChild(opening_hours)
+        general_settings.appendChild(closing_hours)
+        settings.appendChild(general_settings)
