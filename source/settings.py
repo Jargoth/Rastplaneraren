@@ -44,7 +44,7 @@ def update_version(version):
     if int(v[0]) <= 0 and int(v[1]) <= 1 and int(v[2]) < 5:
         settings.setAttribute('version', version)
         announcement = domtree.createElement('announcement')
-        announcement.appendChild(domtree.createTextNode('Nytt i version 0.1.5\n*Fixat ett litet fel på dagens schema.\n*Lagt till möjligheten att ändra öppettiderna.'))
+        announcement.appendChild(domtree.createTextNode('Nytt i version 0.1.5\n*Fixat ett litet fel på dagens schema.\n*Lagt till möjligheten att ändra öppettiderna.\n*Fixat ett fel i loggningen'))
         settings.appendChild(announcement)
 
         general_settings = domtree.createElement('general_settings')
