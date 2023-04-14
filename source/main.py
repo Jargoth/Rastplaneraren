@@ -478,6 +478,9 @@ def settings():
     personelframe.pack(expand=1, fill=X)
     excelframe = Frame(tabs, relief='ridge', bd=2)
     excelframe.pack(expand=1, fill=X)
+    generalframe = Frame(tabs, relief='ridge', bd=2)
+    generalframe.pack(expand=1, fill=X)
+    tabs.add(generalframe, text='Allmänt')
     tabs.add(tasksframe, text='Uppgifter')
     tabs.add(breakframe, text='Rast')
     tabs.add(personelframe, text='Personal')
@@ -725,6 +728,33 @@ def settings():
 
     for add_excel_widget in add_excel_widgets:
         add_excel_widget.grid_remove()
+
+    # General Frame
+
+    # Setting up widgets with current settings
+    general_settings_widgets = []
+    for general_setting in general_settings:
+        temp = []
+        temp.append(StringVar())
+        temp[0].set(general_setting)
+        temp.append(Entry(generalframe, textvariable=temp[0], width=3))
+        general_settings_widgets.append(temp)
+
+    for row, general_settings_widget in enumerate(general_settings_widgets):
+        general_settings_widget[1].grid(column=1, row=row)
+
+    Label(generalframe, text='Öppningstid: ').grid(column=0, row=0, sticky='w')
+    Label(generalframe, text='Stängningstid: ').grid(column=0, row=1, sticky='w')
+
+    Button(generalframe, text='spara', command=lambda gsw=general_settings_widgets: save_general_settings(gsw)).grid(row=1000, column=0, pady=4)
+    Button(generalframe, text='ok', command=settingsWindow.destroy).grid(row=1000, column=1, pady=4)
+
+
+def save_general_settings(general_settings_widgets):
+    # save general settings
+
+    for number, general_settings_widget in enumerate(general_settings_widgets):
+        general_settings[number] = general_settings_widget[0].get()
 
 
 def save_add_excel():
@@ -1300,4 +1330,3 @@ if log['start_stop']:
     time = datetime.datetime.now()
     with open(logfile, 'a') as f:
         f.write(f'{time.hour}:{time.minute}:{time.second} start_stop: program stopped\n')
-

@@ -12,9 +12,16 @@ def start(error=True, add_time=True, add_name=True, plan_breaks=True, change_tas
           move_break=True, load_general_settings=True):
     # start logging
 
+    if getattr(sys, 'frozen', False):  # if program is packed into an exe-file with pytoexe
+        path = f'{os.path.dirname(sys.executable)}\log'
+    else:
+        path = f'{os.path.dirname(os.path.abspath(__file__))}\log'
+
+    print(path)
+
     if error:
     # error logging
-        path = Path(__file__).parent / "log"
+
         try:
             files = os.listdir(path)
             for file in files:
@@ -32,7 +39,7 @@ def start(error=True, add_time=True, add_name=True, plan_breaks=True, change_tas
         sys.stderr = open(f'{path}/{file}', 'w')
 
     log = {}
-    path = Path(__file__).parent / "log"
+
     time = datetime.datetime.now()
     file = f'log{time.year}-{time.month}-{time.day}.log'
     log_something = False
