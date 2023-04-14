@@ -6,6 +6,7 @@ Changes:
 v. 0.1.5
 * Fixed a minor design issue on todays schedule
 * Added support to change opening and closing hours
+* Fixed an error in the logging system
 
 v. 0.1.4
 * Fixed some code aestethics
